@@ -22,8 +22,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package kubernetes
+package v1alpha1
 
 const (
-	GroupName = "mmontes.io"
+	GroupName        = "mmontes.io"
+	Kind      string = "Echo"
+	Plural    string = "echos"
+	Singular  string = "echo"
+	CRDName   string = Plural + "." + GroupName
 )
+
+var ShortNames []string = []string{"ec"}

@@ -16,13 +16,14 @@ else
 		$(MAKEFILE_LIST) | grep -v '@awk' | sort
 endif
 
-.PHONY: deps
-deps:	### Get dependencies
-	@go mod tidy
-
 .PHONY: vendor
 vendor: ### Vendor dependencies
 	@go mod vendor
+
+.PHONY: deps
+deps:	### Get dependencies
+	@go mod tidy
+	@make vendor
 
 .PHONY: codegen
 codegen: vendor ### Generate code
