@@ -26,7 +26,7 @@ type Controller struct {
 	echoClientSet echov1alpha1clientset.Interface
 
 	kubeNamespace string
-	echoNamespace string
+	crdNamespace  string
 
 	queue    workqueue.RateLimitingInterface
 	informer cache.SharedIndexInformer
@@ -93,7 +93,7 @@ func New(
 		extClientSet:  extClientSet,
 		echoClientSet: echoClientSet,
 		kubeNamespace: kubeNamespace,
-		echoNamespace: echoNamespace,
+		crdNamespace:  echoNamespace,
 		queue:         queue,
 		informer:      informer,
 	}

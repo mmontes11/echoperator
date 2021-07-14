@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 
+	"github.com/gotway/gotway/pkg/env"
 	gs "github.com/gotway/gotway/pkg/gracefulshutdown"
 	"github.com/gotway/gotway/pkg/log"
 
@@ -16,6 +17,12 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
+var (
+	KubeConfig          = env.Get("KUBECONFIG", "")
+	KubernetesNamespace = env.Get("KUBERNETES_NAMESPACE", "default")
+	CRDNamespace        = env.Get("CRD_NAMESPACE", "default")
+)
+
 func main() {
 	logger := log.NewLogger(log.Fields{
 		"service": "echoperator",
@@ -25,8 +32,8 @@ func main() {
 
 	var config *rest.Config
 	var err error
-	if kubeconfig, ok := os.LookupEnv("KUBECONFIG"); ok {
-		config, err = clientcmd.BuildConfigFromFlags("", kubeconfig)
+	if KubeConfig != "" {
+		config, err = clientcmd.BuildConfigFromFlags("", KubeConfig)
 	} else {
 		config, err = rest.InClusterConfig()
 	}
@@ -44,7 +51,7 @@ func main() {
 		logger.Fatal("error creating api extensions client ", err)
 	}
 
-	echov1alpha1clientset, err := echov1alpha1clientset.NewForConfig(config)
+	echov1alpha1ClientSet, err := echov1alpha1clientset.NewForConfig(config)
 	if err != nil {
 		logger.Fatal("error creating echo client ", err)
 	}
@@ -52,9 +59,9 @@ func main() {
 	ctrl := controller.New(
 		kubeClientSet,
 		apiextensionsClientSet,
-		echov1alpha1clientset,
-		"default",
-		"default",
+		echov1alpha1ClientSet,
+		KubernetesNamespace,
+		CRDNamespace,
 	)
 
 	_, err = ctrl.RegisterCustomResourceDefinition(ctx)

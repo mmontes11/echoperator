@@ -21,9 +21,8 @@ vendor: ### Vendor dependencies
 	@go mod vendor
 
 .PHONY: deps
-deps:	### Get dependencies
+deps:	### Optimize dependencies
 	@go mod tidy
-	@make vendor
 
 .PHONY: codegen
 codegen: vendor ### Generate code

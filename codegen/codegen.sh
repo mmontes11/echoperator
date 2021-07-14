@@ -34,7 +34,7 @@ CODEGEN_PKG=${CODEGEN_PKG:-$(
 GO_PKG="github.com/mmontes11/echoperator/pkg"
 
 bash "${CODEGEN_PKG}"/generate-groups.sh "all" \
-  ${GO_PKG}/echoperator/v1alpha1/apis \
+  ${GO_PKG}/echo/v1alpha1/apis \
   ${GO_PKG} \
-  echoperator:v1alpha1 \
+  echo:v1alpha1 \
   --go-header-file "${SCRIPT_ROOT}"/codegen/boilerplate.go.txt

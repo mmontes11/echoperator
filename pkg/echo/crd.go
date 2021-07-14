@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package v1alpha1
+package echo
 
 import (
 	version "github.com/mmontes11/echoperator/pkg/echo/version"
