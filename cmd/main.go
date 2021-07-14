@@ -6,7 +6,7 @@ import (
 
 	gs "github.com/gotway/gotway/pkg/gracefulshutdown"
 	"github.com/gotway/gotway/pkg/log"
-	crd "github.com/mmontes11/echoperator/pkg/kubernetes/echoperator"
+	crd "github.com/mmontes11/echoperator/pkg/echoperator"
 
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/client-go/rest"
