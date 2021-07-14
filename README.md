@@ -1,2 +1,2 @@
 # echoperator
-Sample k8s operator for handling echo CRDs 
+Simple kubernetes operator for handling echo CRDs.
