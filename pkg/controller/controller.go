@@ -8,6 +8,7 @@ import (
 	"github.com/gotway/gotway/pkg/log"
 
 	echo "github.com/mmontes11/echoperator/pkg/echo"
+	echov1alpha1 "github.com/mmontes11/echoperator/pkg/echo/v1alpha1"
 	echov1alpha1clientset "github.com/mmontes11/echoperator/pkg/echo/v1alpha1/apis/clientset/versioned"
 	echoinformer "github.com/mmontes11/echoperator/pkg/echo/v1alpha1/apis/informers/externalversions/echo/v1alpha1"
 	echolister "github.com/mmontes11/echoperator/pkg/echo/v1alpha1/apis/listers/echo/v1alpha1"
@@ -106,15 +107,31 @@ func (c *Controller) Run(ctx context.Context, numWorkers int) error {
 }
 
 func (c *Controller) Add(obj interface{}) {
-	c.logger.Info("adding")
+	c.logger.Debug("adding")
+	echo, ok := obj.(*echov1alpha1.Echo)
+	if !ok {
+		c.logger.Errorf("unexpected object %v", obj)
+		return
+	}
+	key, err := cache.MetaNamespaceKeyFunc(echo)
+	if err != nil {
+		c.logger.Error("error getting key ", err)
+		return
+	}
+
+	c.queue.Add(event{
+		key:       key,
+		eventType: add,
+		newEcho:   echo.DeepCopy(),
+	})
 }
 
 func (c *Controller) Update(oldObj interface{}, newObj interface{}) {
-	c.logger.Info("updating")
+	c.logger.Debug("updating")
 }
 
 func (c *Controller) Delete(obj interface{}) {
-	c.logger.Info("deleting")
+	c.logger.Debug("deleting")
 }
 
 func New(
