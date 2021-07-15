@@ -30,10 +30,10 @@ import (
 	"context"
 	time "time"
 
-	echoperatorv1alpha1 "github.com/mmontes11/echoperator/pkg/echo/v1alpha1"
+	echov1alpha1 "github.com/mmontes11/echoperator/pkg/echo/v1alpha1"
 	versioned "github.com/mmontes11/echoperator/pkg/echo/v1alpha1/apis/clientset/versioned"
 	internalinterfaces "github.com/mmontes11/echoperator/pkg/echo/v1alpha1/apis/informers/externalversions/internalinterfaces"
-	v1alpha1 "github.com/mmontes11/echoperator/pkg/echo/v1alpha1/apis/listers/echoperator/v1alpha1"
+	v1alpha1 "github.com/mmontes11/echoperator/pkg/echo/v1alpha1/apis/listers/echo/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	watch "k8s.io/apimachinery/pkg/watch"
@@ -56,25 +56,14 @@ type echoInformer struct {
 // NewEchoInformer constructs a new informer for Echo type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewEchoInformer(
-	client versioned.Interface,
-	namespace string,
-	resyncPeriod time.Duration,
-	indexers cache.Indexers,
-) cache.SharedIndexInformer {
+func NewEchoInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
 	return NewFilteredEchoInformer(client, namespace, resyncPeriod, indexers, nil)
 }
 
 // NewFilteredEchoInformer constructs a new informer for Echo type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewFilteredEchoInformer(
-	client versioned.Interface,
-	namespace string,
-	resyncPeriod time.Duration,
-	indexers cache.Indexers,
-	tweakListOptions internalinterfaces.TweakListOptionsFunc,
-) cache.SharedIndexInformer {
+func NewFilteredEchoInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
 	return cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options v1.ListOptions) (runtime.Object, error) {
@@ -90,27 +79,18 @@ func NewFilteredEchoInformer(
 				return client.MmontesV1alpha1().Echos(namespace).Watch(context.TODO(), options)
 			},
 		},
-		&echoperatorv1alpha1.Echo{},
+		&echov1alpha1.Echo{},
 		resyncPeriod,
 		indexers,
 	)
 }
 
-func (f *echoInformer) defaultInformer(
-	client versioned.Interface,
-	resyncPeriod time.Duration,
-) cache.SharedIndexInformer {
-	return NewFilteredEchoInformer(
-		client,
-		f.namespace,
-		resyncPeriod,
-		cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
-		f.tweakListOptions,
-	)
+func (f *echoInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
+	return NewFilteredEchoInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
 }
 
 func (f *echoInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&echoperatorv1alpha1.Echo{}, f.defaultInformer)
+	return f.factory.InformerFor(&echov1alpha1.Echo{}, f.defaultInformer)
 }
 
 func (f *echoInformer) Lister() v1alpha1.EchoLister {

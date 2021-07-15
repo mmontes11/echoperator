@@ -28,8 +28,8 @@ package fake
 
 import (
 	clientset "github.com/mmontes11/echoperator/pkg/echo/v1alpha1/apis/clientset/versioned"
-	mmontesv1alpha1 "github.com/mmontes11/echoperator/pkg/echo/v1alpha1/apis/clientset/versioned/typed/echoperator/v1alpha1"
-	fakemmontesv1alpha1 "github.com/mmontes11/echoperator/pkg/echo/v1alpha1/apis/clientset/versioned/typed/echoperator/v1alpha1/fake"
+	mmontesv1alpha1 "github.com/mmontes11/echoperator/pkg/echo/v1alpha1/apis/clientset/versioned/typed/echo/v1alpha1"
+	fakemmontesv1alpha1 "github.com/mmontes11/echoperator/pkg/echo/v1alpha1/apis/clientset/versioned/typed/echo/v1alpha1/fake"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/discovery"
@@ -52,18 +52,15 @@ func NewSimpleClientset(objects ...runtime.Object) *Clientset {
 	cs := &Clientset{tracker: o}
 	cs.discovery = &fakediscovery.FakeDiscovery{Fake: &cs.Fake}
 	cs.AddReactor("*", "*", testing.ObjectReaction(o))
-	cs.AddWatchReactor(
-		"*",
-		func(action testing.Action) (handled bool, ret watch.Interface, err error) {
-			gvr := action.GetResource()
-			ns := action.GetNamespace()
-			watch, err := o.Watch(gvr, ns)
-			if err != nil {
-				return false, nil, err
-			}
-			return true, watch, nil
-		},
-	)
+	cs.AddWatchReactor("*", func(action testing.Action) (handled bool, ret watch.Interface, err error) {
+		gvr := action.GetResource()
+		ns := action.GetNamespace()
+		watch, err := o.Watch(gvr, ns)
+		if err != nil {
+			return false, nil, err
+		}
+		return true, watch, nil
+	})
 
 	return cs
 }

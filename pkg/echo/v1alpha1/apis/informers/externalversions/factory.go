@@ -32,7 +32,7 @@ import (
 	time "time"
 
 	versioned "github.com/mmontes11/echoperator/pkg/echo/v1alpha1/apis/clientset/versioned"
-	echoperator "github.com/mmontes11/echoperator/pkg/echo/v1alpha1/apis/informers/externalversions/echoperator"
+	echo "github.com/mmontes11/echoperator/pkg/echo/v1alpha1/apis/informers/externalversions/echo"
 	internalinterfaces "github.com/mmontes11/echoperator/pkg/echo/v1alpha1/apis/informers/externalversions/internalinterfaces"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
@@ -68,9 +68,7 @@ func WithCustomResyncConfig(resyncConfig map[v1.Object]time.Duration) SharedInfo
 }
 
 // WithTweakListOptions sets a custom filter on all listers of the configured SharedInformerFactory.
-func WithTweakListOptions(
-	tweakListOptions internalinterfaces.TweakListOptionsFunc,
-) SharedInformerOption {
+func WithTweakListOptions(tweakListOptions internalinterfaces.TweakListOptionsFunc) SharedInformerOption {
 	return func(factory *sharedInformerFactory) *sharedInformerFactory {
 		factory.tweakListOptions = tweakListOptions
 		return factory
@@ -86,10 +84,7 @@ func WithNamespace(namespace string) SharedInformerOption {
 }
 
 // NewSharedInformerFactory constructs a new instance of sharedInformerFactory for all namespaces.
-func NewSharedInformerFactory(
-	client versioned.Interface,
-	defaultResync time.Duration,
-) SharedInformerFactory {
+func NewSharedInformerFactory(client versioned.Interface, defaultResync time.Duration) SharedInformerFactory {
 	return NewSharedInformerFactoryWithOptions(client, defaultResync)
 }
 
@@ -97,26 +92,12 @@ func NewSharedInformerFactory(
 // Listers obtained via this SharedInformerFactory will be subject to the same filters
 // as specified here.
 // Deprecated: Please use NewSharedInformerFactoryWithOptions instead
-func NewFilteredSharedInformerFactory(
-	client versioned.Interface,
-	defaultResync time.Duration,
-	namespace string,
-	tweakListOptions internalinterfaces.TweakListOptionsFunc,
-) SharedInformerFactory {
-	return NewSharedInformerFactoryWithOptions(
-		client,
-		defaultResync,
-		WithNamespace(namespace),
-		WithTweakListOptions(tweakListOptions),
-	)
+func NewFilteredSharedInformerFactory(client versioned.Interface, defaultResync time.Duration, namespace string, tweakListOptions internalinterfaces.TweakListOptionsFunc) SharedInformerFactory {
+	return NewSharedInformerFactoryWithOptions(client, defaultResync, WithNamespace(namespace), WithTweakListOptions(tweakListOptions))
 }
 
 // NewSharedInformerFactoryWithOptions constructs a new instance of a SharedInformerFactory with additional options.
-func NewSharedInformerFactoryWithOptions(
-	client versioned.Interface,
-	defaultResync time.Duration,
-	options ...SharedInformerOption,
-) SharedInformerFactory {
+func NewSharedInformerFactoryWithOptions(client versioned.Interface, defaultResync time.Duration, options ...SharedInformerOption) SharedInformerFactory {
 	factory := &sharedInformerFactory{
 		client:           client,
 		namespace:        v1.NamespaceAll,
@@ -171,10 +152,7 @@ func (f *sharedInformerFactory) WaitForCacheSync(stopCh <-chan struct{}) map[ref
 
 // InternalInformerFor returns the SharedIndexInformer for obj using an internal
 // client.
-func (f *sharedInformerFactory) InformerFor(
-	obj runtime.Object,
-	newFunc internalinterfaces.NewInformerFunc,
-) cache.SharedIndexInformer {
+func (f *sharedInformerFactory) InformerFor(obj runtime.Object, newFunc internalinterfaces.NewInformerFunc) cache.SharedIndexInformer {
 	f.lock.Lock()
 	defer f.lock.Unlock()
 
@@ -202,9 +180,9 @@ type SharedInformerFactory interface {
 	ForResource(resource schema.GroupVersionResource) (GenericInformer, error)
 	WaitForCacheSync(stopCh <-chan struct{}) map[reflect.Type]bool
 
-	Mmontes() echoperator.Interface
+	Mmontes() echo.Interface
 }
 
-func (f *sharedInformerFactory) Mmontes() echoperator.Interface {
-	return echoperator.New(f, f.namespace, f.tweakListOptions)
+func (f *sharedInformerFactory) Mmontes() echo.Interface {
+	return echo.New(f, f.namespace, f.tweakListOptions)
 }

@@ -9,8 +9,8 @@ import (
 
 	echo "github.com/mmontes11/echoperator/pkg/echo"
 	echov1alpha1clientset "github.com/mmontes11/echoperator/pkg/echo/v1alpha1/apis/clientset/versioned"
-	echoinformer "github.com/mmontes11/echoperator/pkg/echo/v1alpha1/apis/informers/externalversions/echoperator/v1alpha1"
-	echolister "github.com/mmontes11/echoperator/pkg/echo/v1alpha1/apis/listers/echoperator/v1alpha1"
+	echoinformer "github.com/mmontes11/echoperator/pkg/echo/v1alpha1/apis/informers/externalversions/echo/v1alpha1"
+	echolister "github.com/mmontes11/echoperator/pkg/echo/v1alpha1/apis/listers/echo/v1alpha1"
 
 	extv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	extclientset "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"

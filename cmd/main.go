@@ -73,7 +73,6 @@ func main() {
 	if err != nil {
 		logger.Fatal("error registering custom resource definition ", err)
 	}
-	logger.Info("custom resource definition registered")
 
 	if err := ctrl.Run(ctx, NumWorkers); err != nil {
 		logger.Fatal("error running controller ", err)

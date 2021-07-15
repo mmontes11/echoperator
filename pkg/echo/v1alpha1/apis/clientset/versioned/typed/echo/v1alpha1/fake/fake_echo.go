@@ -49,11 +49,7 @@ var echosResource = schema.GroupVersionResource{Group: "mmontes.io", Version: "v
 var echosKind = schema.GroupVersionKind{Group: "mmontes.io", Version: "v1alpha1", Kind: "Echo"}
 
 // Get takes name of the echo, and returns the corresponding echo object, and an error if there is any.
-func (c *FakeEchos) Get(
-	ctx context.Context,
-	name string,
-	options v1.GetOptions,
-) (result *v1alpha1.Echo, err error) {
+func (c *FakeEchos) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.Echo, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewGetAction(echosResource, c.ns, name), &v1alpha1.Echo{})
 
@@ -64,10 +60,7 @@ func (c *FakeEchos) Get(
 }
 
 // List takes label and field selectors, and returns the list of Echos that match those selectors.
-func (c *FakeEchos) List(
-	ctx context.Context,
-	opts v1.ListOptions,
-) (result *v1alpha1.EchoList, err error) {
+func (c *FakeEchos) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha1.EchoList, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewListAction(echosResource, echosKind, c.ns, opts), &v1alpha1.EchoList{})
 
@@ -96,11 +89,7 @@ func (c *FakeEchos) Watch(ctx context.Context, opts v1.ListOptions) (watch.Inter
 }
 
 // Create takes the representation of a echo and creates it.  Returns the server's representation of the echo, and an error, if there is any.
-func (c *FakeEchos) Create(
-	ctx context.Context,
-	echo *v1alpha1.Echo,
-	opts v1.CreateOptions,
-) (result *v1alpha1.Echo, err error) {
+func (c *FakeEchos) Create(ctx context.Context, echo *v1alpha1.Echo, opts v1.CreateOptions) (result *v1alpha1.Echo, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewCreateAction(echosResource, c.ns, echo), &v1alpha1.Echo{})
 
@@ -111,11 +100,7 @@ func (c *FakeEchos) Create(
 }
 
 // Update takes the representation of a echo and updates it. Returns the server's representation of the echo, and an error, if there is any.
-func (c *FakeEchos) Update(
-	ctx context.Context,
-	echo *v1alpha1.Echo,
-	opts v1.UpdateOptions,
-) (result *v1alpha1.Echo, err error) {
+func (c *FakeEchos) Update(ctx context.Context, echo *v1alpha1.Echo, opts v1.UpdateOptions) (result *v1alpha1.Echo, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewUpdateAction(echosResource, c.ns, echo), &v1alpha1.Echo{})
 
@@ -134,11 +119,7 @@ func (c *FakeEchos) Delete(ctx context.Context, name string, opts v1.DeleteOptio
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *FakeEchos) DeleteCollection(
-	ctx context.Context,
-	opts v1.DeleteOptions,
-	listOpts v1.ListOptions,
-) error {
+func (c *FakeEchos) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
 	action := testing.NewDeleteCollectionAction(echosResource, c.ns, listOpts)
 
 	_, err := c.Fake.Invokes(action, &v1alpha1.EchoList{})
@@ -146,19 +127,9 @@ func (c *FakeEchos) DeleteCollection(
 }
 
 // Patch applies the patch and returns the patched echo.
-func (c *FakeEchos) Patch(
-	ctx context.Context,
-	name string,
-	pt types.PatchType,
-	data []byte,
-	opts v1.PatchOptions,
-	subresources ...string,
-) (result *v1alpha1.Echo, err error) {
+func (c *FakeEchos) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.Echo, err error) {
 	obj, err := c.Fake.
-		Invokes(
-			testing.NewPatchSubresourceAction(echosResource, c.ns, name, pt, data, subresources...),
-			&v1alpha1.Echo{},
-		)
+		Invokes(testing.NewPatchSubresourceAction(echosResource, c.ns, name, pt, data, subresources...), &v1alpha1.Echo{})
 
 	if obj == nil {
 		return nil, err

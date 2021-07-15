@@ -53,14 +53,7 @@ type EchoInterface interface {
 	Get(ctx context.Context, name string, opts v1.GetOptions) (*v1alpha1.Echo, error)
 	List(ctx context.Context, opts v1.ListOptions) (*v1alpha1.EchoList, error)
 	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
-	Patch(
-		ctx context.Context,
-		name string,
-		pt types.PatchType,
-		data []byte,
-		opts v1.PatchOptions,
-		subresources ...string,
-	) (result *v1alpha1.Echo, err error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.Echo, err error)
 	EchoExpansion
 }
 
@@ -79,11 +72,7 @@ func newEchos(c *MmontesV1alpha1Client, namespace string) *echos {
 }
 
 // Get takes name of the echo, and returns the corresponding echo object, and an error if there is any.
-func (c *echos) Get(
-	ctx context.Context,
-	name string,
-	options v1.GetOptions,
-) (result *v1alpha1.Echo, err error) {
+func (c *echos) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.Echo, err error) {
 	result = &v1alpha1.Echo{}
 	err = c.client.Get().
 		Namespace(c.ns).
@@ -96,10 +85,7 @@ func (c *echos) Get(
 }
 
 // List takes label and field selectors, and returns the list of Echos that match those selectors.
-func (c *echos) List(
-	ctx context.Context,
-	opts v1.ListOptions,
-) (result *v1alpha1.EchoList, err error) {
+func (c *echos) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha1.EchoList, err error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -131,11 +117,7 @@ func (c *echos) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface
 }
 
 // Create takes the representation of a echo and creates it.  Returns the server's representation of the echo, and an error, if there is any.
-func (c *echos) Create(
-	ctx context.Context,
-	echo *v1alpha1.Echo,
-	opts v1.CreateOptions,
-) (result *v1alpha1.Echo, err error) {
+func (c *echos) Create(ctx context.Context, echo *v1alpha1.Echo, opts v1.CreateOptions) (result *v1alpha1.Echo, err error) {
 	result = &v1alpha1.Echo{}
 	err = c.client.Post().
 		Namespace(c.ns).
@@ -148,11 +130,7 @@ func (c *echos) Create(
 }
 
 // Update takes the representation of a echo and updates it. Returns the server's representation of the echo, and an error, if there is any.
-func (c *echos) Update(
-	ctx context.Context,
-	echo *v1alpha1.Echo,
-	opts v1.UpdateOptions,
-) (result *v1alpha1.Echo, err error) {
+func (c *echos) Update(ctx context.Context, echo *v1alpha1.Echo, opts v1.UpdateOptions) (result *v1alpha1.Echo, err error) {
 	result = &v1alpha1.Echo{}
 	err = c.client.Put().
 		Namespace(c.ns).
@@ -177,11 +155,7 @@ func (c *echos) Delete(ctx context.Context, name string, opts v1.DeleteOptions) 
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *echos) DeleteCollection(
-	ctx context.Context,
-	opts v1.DeleteOptions,
-	listOpts v1.ListOptions,
-) error {
+func (c *echos) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
 	var timeout time.Duration
 	if listOpts.TimeoutSeconds != nil {
 		timeout = time.Duration(*listOpts.TimeoutSeconds) * time.Second
@@ -197,14 +171,7 @@ func (c *echos) DeleteCollection(
 }
 
 // Patch applies the patch and returns the patched echo.
-func (c *echos) Patch(
-	ctx context.Context,
-	name string,
-	pt types.PatchType,
-	data []byte,
-	opts v1.PatchOptions,
-	subresources ...string,
-) (result *v1alpha1.Echo, err error) {
+func (c *echos) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.Echo, err error) {
 	result = &v1alpha1.Echo{}
 	err = c.client.Patch(pt).
 		Namespace(c.ns).

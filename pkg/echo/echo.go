@@ -62,9 +62,15 @@ var CRD = extv1.CustomResourceDefinition{
 					OpenAPIV3Schema: &extv1.JSONSchemaProps{
 						Type: "object",
 						Properties: map[string]extv1.JSONSchemaProps{
-							"message": {Type: "string"},
+							"spec": {
+								Type: "object",
+								Properties: map[string]extv1.JSONSchemaProps{
+									"message": {Type: "string"},
+								},
+								Required: []string{"message"},
+							},
 						},
-						Required: []string{"message"},
+						Required: []string{"spec"},
 					},
 				},
 			},
