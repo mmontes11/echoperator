@@ -57,7 +57,10 @@ func main() {
 		logger.Fatal("error creating echo client ", err)
 	}
 
-	echoInformerFactory := echoinformers.NewSharedInformerFactory(echov1alpha1ClientSet, time.Second*30)
+	echoInformerFactory := echoinformers.NewSharedInformerFactory(
+		echov1alpha1ClientSet,
+		time.Second*30,
+	)
 
 	ctrl := controller.New(
 		kubeClientSet,

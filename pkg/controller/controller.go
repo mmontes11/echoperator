@@ -96,7 +96,7 @@ func (c *Controller) Run(ctx context.Context, numWorkers int) error {
 
 	c.logger.Infof("starting %d workers", numWorkers)
 	for i := 0; i < numWorkers; i++ {
-		go wait.Until(c.runWorker, time.Second, ctx.Done())
+		go wait.Until(func() { c.runWorker(ctx) }, time.Second, ctx.Done())
 	}
 	c.logger.Info("controller ready")
 
