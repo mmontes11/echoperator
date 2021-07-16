@@ -10,8 +10,7 @@ import (
 	echo "github.com/mmontes11/echoperator/pkg/echo"
 	echov1alpha1 "github.com/mmontes11/echoperator/pkg/echo/v1alpha1"
 	echov1alpha1clientset "github.com/mmontes11/echoperator/pkg/echo/v1alpha1/apis/clientset/versioned"
-	echoinformer "github.com/mmontes11/echoperator/pkg/echo/v1alpha1/apis/informers/externalversions/echo/v1alpha1"
-	echolister "github.com/mmontes11/echoperator/pkg/echo/v1alpha1/apis/listers/echo/v1alpha1"
+	echoinformers "github.com/mmontes11/echoperator/pkg/echo/v1alpha1/apis/informers/externalversions"
 
 	extv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	extclientset "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
@@ -20,6 +19,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/errors"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
+	kubeinformers "k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
@@ -29,14 +29,12 @@ type Controller struct {
 	kubeClientSet kubernetes.Interface
 	extClientSet  extclientset.Interface
 
-	echoClientSet echov1alpha1clientset.Interface
-	echoLister    echolister.EchoLister
-	echoInformer  cache.SharedIndexInformer
-
-	kubeNamespace string
-	crdNamespace  string
+	jobInformer  cache.SharedIndexInformer
+	echoInformer cache.SharedIndexInformer
 
 	queue workqueue.RateLimitingInterface
+
+	namespace string
 
 	logger log.Logger
 }
@@ -86,12 +84,14 @@ func (c *Controller) Run(ctx context.Context, numWorkers int) error {
 
 	c.logger.Info("starting controller")
 
-	c.logger.Info("starting informer")
-	go c.echoInformer.Run(ctx.Done())
+	c.logger.Info("starting informers")
+	for _, i := range []cache.SharedIndexInformer{c.jobInformer, c.echoInformer} {
+		go i.Run(ctx.Done())
+	}
 
 	c.logger.Info("waiting for informer caches to sync")
-	if !cache.WaitForCacheSync(ctx.Done(), c.echoInformer.HasSynced) {
-		return fmt.Errorf("failed to wait for caches to sync")
+	if !cache.WaitForCacheSync(ctx.Done(), c.jobInformer.HasSynced, c.echoInformer.HasSynced) {
+		return fmt.Errorf("failed to wait for informers caches to sync")
 	}
 
 	c.logger.Infof("starting %d workers", numWorkers)
@@ -138,30 +138,36 @@ func New(
 	kubeClientSet kubernetes.Interface,
 	extClientSet extclientset.Interface,
 	echoClientSet echov1alpha1clientset.Interface,
-	echoInformer echoinformer.EchoInformer,
-	kubeNamespace, echoNamespace string,
+	namespace string,
 	logger log.Logger,
 ) *Controller {
 
-	informer := echoInformer.Informer()
+	echoInformerFactory := echoinformers.NewSharedInformerFactory(
+		echoClientSet,
+		10*time.Second,
+	)
+	echoInformer := echoInformerFactory.Mmontes().V1alpha1().Echos().Informer()
+
+	kubeInformerFactory := kubeinformers.NewSharedInformerFactory(kubeClientSet, 10*time.Second)
+	jobInformer := kubeInformerFactory.Batch().V1().Jobs().Informer()
+
+	queue := workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter())
 
 	ctrl := &Controller{
 		kubeClientSet: kubeClientSet,
 		extClientSet:  extClientSet,
 
-		echoClientSet: echoClientSet,
-		echoLister:    echoInformer.Lister(),
-		echoInformer:  informer,
+		jobInformer:  jobInformer,
+		echoInformer: echoInformer,
 
-		kubeNamespace: kubeNamespace,
-		crdNamespace:  echoNamespace,
+		queue: queue,
 
-		queue: workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter()),
+		namespace: namespace,
 
 		logger: logger,
 	}
 
-	informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+	echoInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    ctrl.Add,
 		UpdateFunc: ctrl.Update,
 		DeleteFunc: ctrl.Delete,

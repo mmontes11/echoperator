@@ -2,10 +2,12 @@ package controller
 
 import (
 	"context"
+	"fmt"
 
 	echov1alpha1 "github.com/mmontes11/echoperator/pkg/echo/v1alpha1"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 
+	batchv1 "k8s.io/api/batch/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -22,7 +24,6 @@ func (c *Controller) processNextItem(ctx context.Context) bool {
 		return false
 	}
 	defer c.queue.Done(obj)
-
 	event, ok := obj.(event)
 	if !ok {
 		c.logger.Errorf("unexpected event %v", event)
@@ -56,9 +57,32 @@ func (c *Controller) processEvent(ctx context.Context, event event) error {
 }
 
 func (c *Controller) addEcho(ctx context.Context, echo *echov1alpha1.Echo) error {
-	job := createJob(echo, c.kubeNamespace)
-	_, err := c.kubeClientSet.BatchV1().
-		Jobs(c.kubeNamespace).
+	exists, err := c.jobAlreadyExists(echo)
+	if err != nil {
+		return err
+	}
+	if exists {
+		c.logger.Debug("echo job already exists, skipping")
+		return nil
+	}
+	job := createJob(echo, c.namespace)
+	_, err = c.kubeClientSet.BatchV1().
+		Jobs(c.namespace).
 		Create(ctx, job, metav1.CreateOptions{})
 	return err
+}
+
+func (c *Controller) jobAlreadyExists(echo *echov1alpha1.Echo) (bool, error) {
+	for _, obj := range c.jobInformer.GetIndexer().List() {
+		job, ok := (obj).(*batchv1.Job)
+		if !ok {
+			return false, fmt.Errorf("unexpected object %v", obj)
+		}
+		for _, owner := range job.ObjectMeta.OwnerReferences {
+			if owner.UID == echo.UID {
+				return true, nil
+			}
+		}
+	}
+	return false, nil
 }
