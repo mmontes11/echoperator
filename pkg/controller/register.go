@@ -36,7 +36,10 @@ func (c *Controller) registerCustomResourceDefinition(
 		CustomResourceDefinitions().
 		Create(ctx, crd, metav1.CreateOptions{})
 
-	if err != nil && !apierrors.IsAlreadyExists(err) {
+	if err != nil {
+		if apierrors.IsAlreadyExists(err) {
+			return nil
+		}
 		return err
 	}
 
