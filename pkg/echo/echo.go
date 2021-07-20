@@ -31,26 +31,38 @@ import (
 )
 
 const (
-	GroupName        = "mmontes.io"
-	Kind      string = "Echo"
-	Plural    string = "echos"
-	Singular  string = "echo"
-	CRDName   string = Plural + "." + GroupName
+	GroupName = "mmontes.io"
+
+	EchoKind     string = "Echo"
+	EchoListKind string = "EchoList"
+	EchoPlural   string = "echos"
+	EchoSingular string = "echo"
+	EchoCRDName  string = EchoPlural + "." + GroupName
+
+	ScheduledEchoKind     string = "ScheduledEcho"
+	ScheduledEchoListKind string = "ScheduledEchoList"
+	ScheduledEchoPlural   string = "scheduledechos"
+	ScheduledEchoSingular string = "scheduledecho"
+	ScheduledEchoCRDName  string = ScheduledEchoPlural + "." + GroupName
 )
 
-var ShortNames []string = []string{"ec"}
+var (
+	EchoShortNames          []string = []string{"ec"}
+	ScheduledEchoShortNames []string = []string{"sec"}
+)
 
-var CRD = extv1.CustomResourceDefinition{
+var EchoCRD = extv1.CustomResourceDefinition{
 	ObjectMeta: metav1.ObjectMeta{
-		Name: CRDName,
+		Name: EchoCRDName,
 	},
 	Spec: extv1.CustomResourceDefinitionSpec{
 		Group: GroupName,
 		Names: extv1.CustomResourceDefinitionNames{
-			Kind:       Kind,
-			Plural:     Plural,
-			Singular:   Singular,
-			ShortNames: ShortNames,
+			Kind:       EchoKind,
+			ListKind:   EchoListKind,
+			Plural:     EchoPlural,
+			Singular:   EchoSingular,
+			ShortNames: EchoShortNames,
 		},
 		Scope: extv1.NamespaceScoped,
 		Versions: []extv1.CustomResourceDefinitionVersion{
@@ -68,6 +80,46 @@ var CRD = extv1.CustomResourceDefinition{
 									"message": {Type: "string"},
 								},
 								Required: []string{"message"},
+							},
+						},
+						Required: []string{"spec"},
+					},
+				},
+			},
+		},
+	},
+}
+
+var ScheduledEchoCRD = extv1.CustomResourceDefinition{
+	ObjectMeta: metav1.ObjectMeta{
+		Name: ScheduledEchoCRDName,
+	},
+	Spec: extv1.CustomResourceDefinitionSpec{
+		Group: GroupName,
+		Names: extv1.CustomResourceDefinitionNames{
+			Kind:       ScheduledEchoKind,
+			ListKind:   ScheduledEchoListKind,
+			Plural:     ScheduledEchoPlural,
+			Singular:   ScheduledEchoSingular,
+			ShortNames: ScheduledEchoShortNames,
+		},
+		Scope: extv1.NamespaceScoped,
+		Versions: []extv1.CustomResourceDefinitionVersion{
+			{
+				Name:    version.V1alpha1,
+				Served:  true,
+				Storage: true,
+				Schema: &extv1.CustomResourceValidation{
+					OpenAPIV3Schema: &extv1.JSONSchemaProps{
+						Type: "object",
+						Properties: map[string]extv1.JSONSchemaProps{
+							"spec": {
+								Type: "object",
+								Properties: map[string]extv1.JSONSchemaProps{
+									"message": {Type: "string"},
+									"cron":    {Type: "string"},
+								},
+								Required: []string{"message", "cron"},
 							},
 						},
 						Required: []string{"spec"},

@@ -27,3 +27,5 @@ SOFTWARE.
 package v1alpha1
 
 type EchoExpansion interface{}
+
+type ScheduledEchoExpansion interface{}

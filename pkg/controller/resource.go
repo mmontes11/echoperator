@@ -18,7 +18,7 @@ func createJob(newEcho *echov1alpha1.Echo, namespace string) *batchv1.Job {
 			OwnerReferences: []metav1.OwnerReference{
 				{
 					APIVersion: version.V1alpha1,
-					Kind:       echo.Kind,
+					Kind:       echo.EchoKind,
 					Name:       newEcho.ObjectMeta.Name,
 					UID:        newEcho.UID,
 				},

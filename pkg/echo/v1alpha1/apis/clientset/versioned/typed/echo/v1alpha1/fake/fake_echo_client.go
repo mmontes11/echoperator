@@ -40,6 +40,10 @@ func (c *FakeMmontesV1alpha1) Echos(namespace string) v1alpha1.EchoInterface {
 	return &FakeEchos{c, namespace}
 }
 
+func (c *FakeMmontesV1alpha1) ScheduledEchos(namespace string) v1alpha1.ScheduledEchoInterface {
+	return &FakeScheduledEchos{c, namespace}
+}
+
 // RESTClient returns a RESTClient that is used to communicate
 // with API server by this client implementation.
 func (c *FakeMmontesV1alpha1) RESTClient() rest.Interface {

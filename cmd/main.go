@@ -61,9 +61,8 @@ func main() {
 		logger.WithField("type", "controller"),
 	)
 
-	_, err = ctrl.RegisterCustomResourceDefinition(ctx)
-	if err != nil {
-		logger.Fatal("error registering custom resource definition ", err)
+	if err := ctrl.RegisterCustomResourceDefinitions(ctx); err != nil {
+		logger.Fatal("error registering CRDs ", err)
 	}
 
 	if err := ctrl.Run(ctx, NumWorkers); err != nil {

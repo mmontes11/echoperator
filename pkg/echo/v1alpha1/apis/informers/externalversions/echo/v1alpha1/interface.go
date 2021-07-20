@@ -34,6 +34,8 @@ import (
 type Interface interface {
 	// Echos returns a EchoInformer.
 	Echos() EchoInformer
+	// ScheduledEchos returns a ScheduledEchoInformer.
+	ScheduledEchos() ScheduledEchoInformer
 }
 
 type version struct {
@@ -50,4 +52,9 @@ func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakList
 // Echos returns a EchoInformer.
 func (v *version) Echos() EchoInformer {
 	return &echoInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+}
+
+// ScheduledEchos returns a ScheduledEchoInformer.
+func (v *version) ScheduledEchos() ScheduledEchoInformer {
+	return &scheduledEchoInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }

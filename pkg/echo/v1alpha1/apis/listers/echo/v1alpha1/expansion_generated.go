@@ -33,3 +33,11 @@ type EchoListerExpansion interface{}
 // EchoNamespaceListerExpansion allows custom methods to be added to
 // EchoNamespaceLister.
 type EchoNamespaceListerExpansion interface{}
+
+// ScheduledEchoListerExpansion allows custom methods to be added to
+// ScheduledEchoLister.
+type ScheduledEchoListerExpansion interface{}
+
+// ScheduledEchoNamespaceListerExpansion allows custom methods to be added to
+// ScheduledEchoNamespaceLister.
+type ScheduledEchoNamespaceListerExpansion interface{}

@@ -35,6 +35,7 @@ import (
 type MmontesV1alpha1Interface interface {
 	RESTClient() rest.Interface
 	EchosGetter
+	ScheduledEchosGetter
 }
 
 // MmontesV1alpha1Client is used to interact with features provided by the mmontes.io group.
@@ -44,6 +45,10 @@ type MmontesV1alpha1Client struct {
 
 func (c *MmontesV1alpha1Client) Echos(namespace string) EchoInterface {
 	return newEchos(c, namespace)
+}
+
+func (c *MmontesV1alpha1Client) ScheduledEchos(namespace string) ScheduledEchoInterface {
+	return newScheduledEchos(c, namespace)
 }
 
 // NewForConfig creates a new MmontesV1alpha1Client for the given config.

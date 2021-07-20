@@ -63,6 +63,8 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 	// Group=mmontes.io, Version=v1alpha1
 	case v1alpha1.SchemeGroupVersion.WithResource("echos"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Mmontes().V1alpha1().Echos().Informer()}, nil
+	case v1alpha1.SchemeGroupVersion.WithResource("scheduledechos"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Mmontes().V1alpha1().ScheduledEchos().Informer()}, nil
 
 	}
 
