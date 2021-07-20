@@ -3,11 +3,12 @@ package main
 import (
 	"context"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/gotway/gotway/pkg/env"
 	"github.com/gotway/gotway/pkg/log"
 
-	echoperatorctx "github.com/mmontes11/echoperator/pkg/context"
 	"github.com/mmontes11/echoperator/pkg/controller"
 	echov1alpha1clientset "github.com/mmontes11/echoperator/pkg/echo/v1alpha1/apis/clientset/versioned"
 
@@ -24,10 +25,17 @@ var (
 )
 
 func main() {
+	ctx, _ := signal.NotifyContext(context.Background(), []os.Signal{
+		os.Interrupt,
+		syscall.SIGINT,
+		syscall.SIGTERM,
+		syscall.SIGKILL,
+		syscall.SIGHUP,
+		syscall.SIGQUIT,
+	}...)
 	logger := log.NewLogger(log.Fields{
 		"service": "echoperator",
 	}, "local", "debug", os.Stdout)
-	ctx := echoperatorctx.WithGracefulShutdown(context.Background(), logger)
 
 	var config *rest.Config
 	var err error
