@@ -1,0 +1,8 @@
+apiVersion: mmontes.io/v1alpha1
+kind: ScheduledEcho
+metadata:
+  name: hello-world
+  namespace: default
+spec:
+  message: "Hola, 世界!"
+  schedule: "*/1 * * * *"

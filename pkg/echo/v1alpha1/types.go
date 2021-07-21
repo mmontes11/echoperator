@@ -34,8 +34,8 @@ type ScheduledEcho struct {
 }
 
 type ScheduledEchoSpec struct {
-	Message string `json:"message"`
-	Cront   string `json:"cron"`
+	Message  string `json:"message"`
+	Schedule string `json:"schedule"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

@@ -27,6 +27,9 @@ type Controller struct {
 	jobInformer  cache.SharedIndexInformer
 	echoInformer cache.SharedIndexInformer
 
+	cronjobInformer       cache.SharedIndexInformer
+	scheduledEchoInformer cache.SharedIndexInformer
+
 	queue workqueue.RateLimitingInterface
 
 	namespace string
@@ -41,7 +44,12 @@ func (c *Controller) Run(ctx context.Context, numWorkers int) error {
 	c.logger.Info("starting controller")
 
 	c.logger.Info("starting informers")
-	for _, i := range []cache.SharedIndexInformer{c.jobInformer, c.echoInformer} {
+	for _, i := range []cache.SharedIndexInformer{
+		c.jobInformer,
+		c.echoInformer,
+		c.cronjobInformer,
+		c.scheduledEchoInformer,
+	} {
 		go i.Run(ctx.Done())
 	}
 
@@ -69,16 +77,24 @@ func (c *Controller) AddEcho(obj interface{}) {
 		c.logger.Errorf("unexpected object %v", obj)
 		return
 	}
-	key, err := cache.MetaNamespaceKeyFunc(echo)
-	if err != nil {
-		c.logger.Error("error getting key ", err)
+
+	c.queue.Add(event{
+		eventType: addEcho,
+		resource:  echo.DeepCopy(),
+	})
+}
+
+func (c *Controller) AddScheduledEcho(obj interface{}) {
+	c.logger.Debug("adding scheduled echo")
+	scheduledEcho, ok := obj.(*echov1alpha1.ScheduledEcho)
+	if !ok {
+		c.logger.Errorf("unexpected object %v", obj)
 		return
 	}
 
 	c.queue.Add(event{
-		key:       key,
-		eventType: add,
-		newEcho:   echo.DeepCopy(),
+		eventType: addScheduledEcho,
+		resource:  scheduledEcho.DeepCopy(),
 	})
 }
 
@@ -95,9 +111,11 @@ func New(
 		10*time.Second,
 	)
 	echoInformer := echoInformerFactory.Mmontes().V1alpha1().Echos().Informer()
+	scheduledechoInformer := echoInformerFactory.Mmontes().V1alpha1().ScheduledEchos().Informer()
 
 	kubeInformerFactory := kubeinformers.NewSharedInformerFactory(kubeClientSet, 10*time.Second)
 	jobInformer := kubeInformerFactory.Batch().V1().Jobs().Informer()
+	cronjobInformer := kubeInformerFactory.Batch().V1beta1().CronJobs().Informer()
 
 	queue := workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter())
 
@@ -108,6 +126,9 @@ func New(
 		jobInformer:  jobInformer,
 		echoInformer: echoInformer,
 
+		cronjobInformer:       cronjobInformer,
+		scheduledEchoInformer: scheduledechoInformer,
+
 		queue: queue,
 
 		namespace: namespace,
@@ -117,6 +138,9 @@ func New(
 
 	echoInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: ctrl.AddEcho,
+	})
+	scheduledechoInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc: ctrl.AddScheduledEcho,
 	})
 
 	return ctrl

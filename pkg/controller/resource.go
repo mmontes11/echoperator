@@ -5,6 +5,7 @@ import (
 	echov1alpha1 "github.com/mmontes11/echoperator/pkg/echo/v1alpha1"
 	"github.com/mmontes11/echoperator/pkg/echo/version"
 	batchv1 "k8s.io/api/batch/v1"
+	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -24,24 +25,58 @@ func createJob(newEcho *echov1alpha1.Echo, namespace string) *batchv1.Job {
 				},
 			},
 		},
-		Spec: batchv1.JobSpec{
-			Template: corev1.PodTemplateSpec{
+		Spec: createJobSpec(newEcho.Name, namespace, newEcho.Spec.Message),
+	}
+}
+
+func createCronJob(newScheduledEcho *echov1alpha1.ScheduledEcho, namespace string) *batchv1beta1.CronJob {
+	return &batchv1beta1.CronJob{
+		ObjectMeta: metav1.ObjectMeta{
+			GenerateName: newScheduledEcho.ObjectMeta.Name + "-scheduledecho-",
+			Namespace:    namespace,
+			Labels:       make(map[string]string),
+			OwnerReferences: []metav1.OwnerReference{
+				{
+					APIVersion: version.V1alpha1,
+					Kind:       echo.EchoKind,
+					Name:       newScheduledEcho.ObjectMeta.Name,
+					UID:        newScheduledEcho.UID,
+				},
+			},
+		},
+		Spec: batchv1beta1.CronJobSpec{
+			Schedule:          newScheduledEcho.Spec.Schedule,
+			ConcurrencyPolicy: batchv1beta1.ForbidConcurrent,
+			JobTemplate: batchv1beta1.JobTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					GenerateName: newEcho.Name + "-",
+					GenerateName: newScheduledEcho.Name + "-",
 					Namespace:    namespace,
 					Labels:       make(map[string]string),
 				},
-				Spec: corev1.PodSpec{
-					Containers: []corev1.Container{
-						{
-							Name:            newEcho.Name,
-							Image:           "busybox:1.33.1",
-							Command:         []string{"echo", newEcho.Spec.Message},
-							ImagePullPolicy: "IfNotPresent",
-						},
+				Spec: createJobSpec(newScheduledEcho.Name, namespace, newScheduledEcho.Spec.Message),
+			},
+		},
+	}
+}
+
+func createJobSpec(name, namespace, msg string) batchv1.JobSpec {
+	return batchv1.JobSpec{
+		Template: corev1.PodTemplateSpec{
+			ObjectMeta: metav1.ObjectMeta{
+				GenerateName: name + "-",
+				Namespace:    namespace,
+				Labels:       make(map[string]string),
+			},
+			Spec: corev1.PodSpec{
+				Containers: []corev1.Container{
+					{
+						Name:            name,
+						Image:           "busybox:1.33.1",
+						Command:         []string{"echo", msg},
+						ImagePullPolicy: "IfNotPresent",
 					},
-					RestartPolicy: corev1.RestartPolicyNever,
 				},
+				RestartPolicy: corev1.RestartPolicyNever,
 			},
 		},
 	}

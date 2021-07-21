@@ -116,10 +116,10 @@ var ScheduledEchoCRD = extv1.CustomResourceDefinition{
 							"spec": {
 								Type: "object",
 								Properties: map[string]extv1.JSONSchemaProps{
-									"message": {Type: "string"},
-									"cron":    {Type: "string"},
+									"message":  {Type: "string"},
+									"schedule": {Type: "string"},
 								},
-								Required: []string{"message", "cron"},
+								Required: []string{"message", "schedule"},
 							},
 						},
 						Required: []string{"spec"},
