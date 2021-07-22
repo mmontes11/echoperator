@@ -2,7 +2,7 @@ package controller
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"time"
 
 	"github.com/gotway/gotway/pkg/log"
@@ -59,12 +59,16 @@ func (c *Controller) Run(ctx context.Context, numWorkers int) error {
 		c.jobInformer.HasSynced,
 		c.cronjobInformer.HasSynced,
 	}...) {
-		return fmt.Errorf("failed to wait for informers caches to sync")
+		err := errors.New("failed to wait for informers caches to sync")
+		utilruntime.HandleError(err)
+		return err
 	}
 
 	c.logger.Infof("starting %d workers", numWorkers)
 	for i := 0; i < numWorkers; i++ {
-		go wait.Until(func() { c.runWorker(ctx) }, time.Second, ctx.Done())
+		go wait.Until(func() {
+			c.runWorker(ctx)
+		}, time.Second, ctx.Done())
 	}
 	c.logger.Info("controller ready")
 
@@ -74,32 +78,38 @@ func (c *Controller) Run(ctx context.Context, numWorkers int) error {
 	return nil
 }
 
-func (c *Controller) AddEcho(obj interface{}) {
-	c.logger.Debug("adding echo")
-	echo, ok := obj.(*echov1alpha1.Echo)
-	if !ok {
-		c.logger.Errorf("unexpected object %v", obj)
-		return
-	}
-
+func (c *Controller) AddEcho(echo *echov1alpha1.Echo) {
 	c.queue.Add(event{
 		eventType: addEcho,
 		resource:  echo.DeepCopy(),
 	})
 }
 
-func (c *Controller) AddScheduledEcho(obj interface{}) {
+func (c *Controller) AddScheduledEcho(scheduledEcho *echov1alpha1.ScheduledEcho) {
+	c.queue.Add(event{
+		eventType: addScheduledEcho,
+		resource:  scheduledEcho.DeepCopy(),
+	})
+}
+
+func (c *Controller) addEcho(obj interface{}) {
+	c.logger.Debug("adding echo")
+	echo, ok := obj.(*echov1alpha1.Echo)
+	if !ok {
+		c.logger.Errorf("unexpected object %v", obj)
+		return
+	}
+	c.AddEcho(echo)
+}
+
+func (c *Controller) addScheduledEcho(obj interface{}) {
 	c.logger.Debug("adding scheduled echo")
 	scheduledEcho, ok := obj.(*echov1alpha1.ScheduledEcho)
 	if !ok {
 		c.logger.Errorf("unexpected object %v", obj)
 		return
 	}
-
-	c.queue.Add(event{
-		eventType: addScheduledEcho,
-		resource:  scheduledEcho.DeepCopy(),
-	})
+	c.AddScheduledEcho(scheduledEcho)
 }
 
 func New(
@@ -140,10 +150,10 @@ func New(
 	}
 
 	echoInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
-		AddFunc: ctrl.AddEcho,
+		AddFunc: ctrl.addEcho,
 	})
 	scheduledechoInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
-		AddFunc: ctrl.AddScheduledEcho,
+		AddFunc: ctrl.addScheduledEcho,
 	})
 
 	return ctrl

@@ -49,14 +49,14 @@ func (c *Controller) processEvent(ctx context.Context, obj interface{}) error {
 	}
 	switch event.eventType {
 	case addEcho:
-		return c.addEcho(ctx, event.resource.(*echov1alpha1.Echo))
+		return c.processEcho(ctx, event.resource.(*echov1alpha1.Echo))
 	case addScheduledEcho:
-		return c.addScheduledEcho(ctx, event.resource.(*echov1alpha1.ScheduledEcho))
+		return c.processScheduledEcho(ctx, event.resource.(*echov1alpha1.ScheduledEcho))
 	}
 	return nil
 }
 
-func (c *Controller) addEcho(ctx context.Context, echo *echov1alpha1.Echo) error {
+func (c *Controller) processEcho(ctx context.Context, echo *echov1alpha1.Echo) error {
 	job := createJob(echo, c.namespace)
 	exists, err := resourceExists(job, c.jobInformer.GetIndexer())
 	if err != nil {
@@ -73,7 +73,7 @@ func (c *Controller) addEcho(ctx context.Context, echo *echov1alpha1.Echo) error
 	return err
 }
 
-func (c *Controller) addScheduledEcho(ctx context.Context, scheduledEcho *echov1alpha1.ScheduledEcho) error {
+func (c *Controller) processScheduledEcho(ctx context.Context, scheduledEcho *echov1alpha1.ScheduledEcho) error {
 	cronjob := createCronJob(scheduledEcho, c.namespace)
 	exists, err := resourceExists(cronjob, c.cronjobInformer.GetIndexer())
 	if err != nil {
