@@ -22,6 +22,8 @@ var (
 	KubeConfig = env.Get("KUBECONFIG", "")
 	Namespace  = env.Get("NAMESPACE", "default")
 	NumWorkers = env.GetInt("NUM_WORKERS", 4)
+	Env        = env.Get("ENV", "local")
+	LogLevel   = env.Get("LOG_LEVEL", "debug")
 )
 
 func main() {
@@ -35,7 +37,7 @@ func main() {
 	}...)
 	logger := log.NewLogger(log.Fields{
 		"service": "echoperator",
-	}, "local", "debug", os.Stdout)
+	}, Env, LogLevel, os.Stdout)
 
 	var config *rest.Config
 	var err error
