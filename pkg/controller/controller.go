@@ -24,11 +24,10 @@ type Controller struct {
 	kubeClientSet kubernetes.Interface
 	extClientSet  extclientset.Interface
 
-	jobInformer  cache.SharedIndexInformer
-	echoInformer cache.SharedIndexInformer
-
-	cronjobInformer       cache.SharedIndexInformer
+	echoInformer          cache.SharedIndexInformer
+	jobInformer           cache.SharedIndexInformer
 	scheduledEchoInformer cache.SharedIndexInformer
+	cronjobInformer       cache.SharedIndexInformer
 
 	queue workqueue.RateLimitingInterface
 
@@ -45,16 +44,21 @@ func (c *Controller) Run(ctx context.Context, numWorkers int) error {
 
 	c.logger.Info("starting informers")
 	for _, i := range []cache.SharedIndexInformer{
-		c.jobInformer,
 		c.echoInformer,
-		c.cronjobInformer,
 		c.scheduledEchoInformer,
+		c.jobInformer,
+		c.cronjobInformer,
 	} {
 		go i.Run(ctx.Done())
 	}
 
 	c.logger.Info("waiting for informer caches to sync")
-	if !cache.WaitForCacheSync(ctx.Done(), c.jobInformer.HasSynced, c.echoInformer.HasSynced) {
+	if !cache.WaitForCacheSync(ctx.Done(), []cache.InformerSynced{
+		c.echoInformer.HasSynced,
+		c.scheduledEchoInformer.HasSynced,
+		c.jobInformer.HasSynced,
+		c.cronjobInformer.HasSynced,
+	}...) {
 		return fmt.Errorf("failed to wait for informers caches to sync")
 	}
 
@@ -123,11 +127,10 @@ func New(
 		kubeClientSet: kubeClientSet,
 		extClientSet:  extClientSet,
 
-		jobInformer:  jobInformer,
-		echoInformer: echoInformer,
-
-		cronjobInformer:       cronjobInformer,
+		echoInformer:          echoInformer,
+		jobInformer:           jobInformer,
 		scheduledEchoInformer: scheduledechoInformer,
+		cronjobInformer:       cronjobInformer,
 
 		queue: queue,
 

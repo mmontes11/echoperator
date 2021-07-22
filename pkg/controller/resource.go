@@ -13,9 +13,9 @@ import (
 func createJob(newEcho *echov1alpha1.Echo, namespace string) *batchv1.Job {
 	return &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
-			GenerateName: newEcho.ObjectMeta.Name + "-echo-",
-			Namespace:    namespace,
-			Labels:       make(map[string]string),
+			Name:      newEcho.ObjectMeta.Name,
+			Namespace: namespace,
+			Labels:    make(map[string]string),
 			OwnerReferences: []metav1.OwnerReference{
 				{
 					APIVersion: version.V1alpha1,
@@ -32,9 +32,9 @@ func createJob(newEcho *echov1alpha1.Echo, namespace string) *batchv1.Job {
 func createCronJob(newScheduledEcho *echov1alpha1.ScheduledEcho, namespace string) *batchv1beta1.CronJob {
 	return &batchv1beta1.CronJob{
 		ObjectMeta: metav1.ObjectMeta{
-			GenerateName: newScheduledEcho.ObjectMeta.Name + "-scheduledecho-",
-			Namespace:    namespace,
-			Labels:       make(map[string]string),
+			Name:      newScheduledEcho.ObjectMeta.Name,
+			Namespace: namespace,
+			Labels:    make(map[string]string),
 			OwnerReferences: []metav1.OwnerReference{
 				{
 					APIVersion: version.V1alpha1,

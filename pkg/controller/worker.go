@@ -6,9 +6,8 @@ import (
 
 	echov1alpha1 "github.com/mmontes11/echoperator/pkg/echo/v1alpha1"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+	"k8s.io/client-go/tools/cache"
 
-	batchv1 "k8s.io/api/batch/v1"
-	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -58,15 +57,16 @@ func (c *Controller) processEvent(ctx context.Context, obj interface{}) error {
 }
 
 func (c *Controller) addEcho(ctx context.Context, echo *echov1alpha1.Echo) error {
-	exists, err := c.jobAlreadyExists(echo)
+	job := createJob(echo, c.namespace)
+	exists, err := resourceExists(job, c.jobInformer.GetIndexer())
 	if err != nil {
-		return err
+		return fmt.Errorf("error checking job existence %v", err)
 	}
 	if exists {
-		c.logger.Debug("echo job already exists, skipping")
+		c.logger.Debug("job already exists, skipping")
 		return nil
 	}
-	job := createJob(echo, c.namespace)
+
 	_, err = c.kubeClientSet.BatchV1().
 		Jobs(c.namespace).
 		Create(ctx, job, metav1.CreateOptions{})
@@ -74,47 +74,27 @@ func (c *Controller) addEcho(ctx context.Context, echo *echov1alpha1.Echo) error
 }
 
 func (c *Controller) addScheduledEcho(ctx context.Context, scheduledEcho *echov1alpha1.ScheduledEcho) error {
-	exists, err := c.cronJobAlreadyExists(scheduledEcho)
+	cronjob := createCronJob(scheduledEcho, c.namespace)
+	exists, err := resourceExists(cronjob, c.cronjobInformer.GetIndexer())
 	if err != nil {
-		return err
+		return fmt.Errorf("error checking cronjobjob existence %v", err)
 	}
 	if exists {
-		c.logger.Debug("echo cronjob already exists, skipping")
+		c.logger.Debug("cronjob already exists, skipping")
 		return nil
 	}
-	cronjob := createCronJob(scheduledEcho, c.namespace)
+
 	_, err = c.kubeClientSet.BatchV1beta1().
 		CronJobs(c.namespace).
 		Create(ctx, cronjob, metav1.CreateOptions{})
 	return err
 }
 
-func (c *Controller) jobAlreadyExists(echo *echov1alpha1.Echo) (bool, error) {
-	for _, obj := range c.jobInformer.GetIndexer().List() {
-		job, ok := (obj).(*batchv1.Job)
-		if !ok {
-			return false, fmt.Errorf("unexpected object %v", obj)
-		}
-		for _, owner := range job.ObjectMeta.OwnerReferences {
-			if owner.UID == echo.UID {
-				return true, nil
-			}
-		}
+func resourceExists(obj interface{}, indexer cache.Indexer) (bool, error) {
+	key, err := cache.MetaNamespaceKeyFunc(obj)
+	if err != nil {
+		return false, fmt.Errorf("error getting key %v", err)
 	}
-	return false, nil
-}
-
-func (c *Controller) cronJobAlreadyExists(echo *echov1alpha1.ScheduledEcho) (bool, error) {
-	for _, obj := range c.cronjobInformer.GetIndexer().List() {
-		cronjob, ok := (obj).(*batchv1beta1.CronJob)
-		if !ok {
-			return false, fmt.Errorf("unexpected object %v", obj)
-		}
-		for _, owner := range cronjob.ObjectMeta.OwnerReferences {
-			if owner.UID == echo.UID {
-				return true, nil
-			}
-		}
-	}
-	return false, nil
+	_, exists, err := indexer.GetByKey(key)
+	return exists, err
 }
