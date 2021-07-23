@@ -3,11 +3,12 @@ package controller
 type eventType string
 
 const (
-	addEcho          eventType = "addEcho"
-	addScheduledEcho eventType = "addScheduledEcho"
+	addEcho             eventType = "addEcho"
+	addScheduledEcho    eventType = "addScheduledEcho"
+	updateScheduledEcho eventType = "updateScheduledEcho"
 )
 
 type event struct {
-	eventType eventType
-	resource  interface{}
+	eventType      eventType
+	oldObj, newObj interface{}
 }

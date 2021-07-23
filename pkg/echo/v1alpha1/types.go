@@ -33,6 +33,10 @@ type ScheduledEcho struct {
 	Spec              ScheduledEchoSpec `json:"spec"`
 }
 
+func (e *ScheduledEcho) HasChanged(other *ScheduledEcho) bool {
+	return e.Spec.Message != other.Spec.Message || e.Spec.Schedule != other.Spec.Schedule
+}
+
 type ScheduledEchoSpec struct {
 	Message  string `json:"message"`
 	Schedule string `json:"schedule"`

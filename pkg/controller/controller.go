@@ -78,20 +78,6 @@ func (c *Controller) Run(ctx context.Context, numWorkers int) error {
 	return nil
 }
 
-func (c *Controller) AddEcho(echo *echov1alpha1.Echo) {
-	c.queue.Add(event{
-		eventType: addEcho,
-		resource:  echo.DeepCopy(),
-	})
-}
-
-func (c *Controller) AddScheduledEcho(scheduledEcho *echov1alpha1.ScheduledEcho) {
-	c.queue.Add(event{
-		eventType: addScheduledEcho,
-		resource:  scheduledEcho.DeepCopy(),
-	})
-}
-
 func (c *Controller) addEcho(obj interface{}) {
 	c.logger.Debug("adding echo")
 	echo, ok := obj.(*echov1alpha1.Echo)
@@ -99,7 +85,10 @@ func (c *Controller) addEcho(obj interface{}) {
 		c.logger.Errorf("unexpected object %v", obj)
 		return
 	}
-	c.AddEcho(echo)
+	c.queue.Add(event{
+		eventType: addEcho,
+		newObj:    echo.DeepCopy(),
+	})
 }
 
 func (c *Controller) addScheduledEcho(obj interface{}) {
@@ -109,7 +98,29 @@ func (c *Controller) addScheduledEcho(obj interface{}) {
 		c.logger.Errorf("unexpected object %v", obj)
 		return
 	}
-	c.AddScheduledEcho(scheduledEcho)
+	c.queue.Add(event{
+		eventType: addScheduledEcho,
+		newObj:    scheduledEcho.DeepCopy(),
+	})
+}
+
+func (c *Controller) updateScheduledEcho(oldObj, newObj interface{}) {
+	c.logger.Debug("updating scheduled echo")
+	oldScheduledEcho, ok := oldObj.(*echov1alpha1.ScheduledEcho)
+	if !ok {
+		c.logger.Errorf("unexpected new object %v", newObj)
+		return
+	}
+	scheduledEcho, ok := newObj.(*echov1alpha1.ScheduledEcho)
+	if !ok {
+		c.logger.Errorf("unexpected new object %v", newObj)
+		return
+	}
+	c.queue.Add(event{
+		eventType: updateScheduledEcho,
+		oldObj:    oldScheduledEcho.DeepCopy(),
+		newObj:    scheduledEcho.DeepCopy(),
+	})
 }
 
 func New(
@@ -153,7 +164,8 @@ func New(
 		AddFunc: ctrl.addEcho,
 	})
 	scheduledechoInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
-		AddFunc: ctrl.addScheduledEcho,
+		AddFunc:    ctrl.addScheduledEcho,
+		UpdateFunc: ctrl.updateScheduledEcho,
 	})
 
 	return ctrl

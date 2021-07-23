@@ -49,14 +49,20 @@ func (c *Controller) processEvent(ctx context.Context, obj interface{}) error {
 	}
 	switch event.eventType {
 	case addEcho:
-		return c.processEcho(ctx, event.resource.(*echov1alpha1.Echo))
+		return c.processAddEcho(ctx, event.newObj.(*echov1alpha1.Echo))
 	case addScheduledEcho:
-		return c.processScheduledEcho(ctx, event.resource.(*echov1alpha1.ScheduledEcho))
+		return c.processAddScheduledEcho(ctx, event.newObj.(*echov1alpha1.ScheduledEcho))
+	case updateScheduledEcho:
+		return c.processUpdateScheduledEcho(
+			ctx,
+			event.oldObj.(*echov1alpha1.ScheduledEcho),
+			event.newObj.(*echov1alpha1.ScheduledEcho),
+		)
 	}
 	return nil
 }
 
-func (c *Controller) processEcho(ctx context.Context, echo *echov1alpha1.Echo) error {
+func (c *Controller) processAddEcho(ctx context.Context, echo *echov1alpha1.Echo) error {
 	job := createJob(echo, c.namespace)
 	exists, err := resourceExists(job, c.jobInformer.GetIndexer())
 	if err != nil {
@@ -73,7 +79,7 @@ func (c *Controller) processEcho(ctx context.Context, echo *echov1alpha1.Echo) e
 	return err
 }
 
-func (c *Controller) processScheduledEcho(ctx context.Context, scheduledEcho *echov1alpha1.ScheduledEcho) error {
+func (c *Controller) processAddScheduledEcho(ctx context.Context, scheduledEcho *echov1alpha1.ScheduledEcho) error {
 	cronjob := createCronJob(scheduledEcho, c.namespace)
 	exists, err := resourceExists(cronjob, c.cronjobInformer.GetIndexer())
 	if err != nil {
@@ -87,6 +93,22 @@ func (c *Controller) processScheduledEcho(ctx context.Context, scheduledEcho *ec
 	_, err = c.kubeClientSet.BatchV1beta1().
 		CronJobs(c.namespace).
 		Create(ctx, cronjob, metav1.CreateOptions{})
+	return err
+}
+
+func (c *Controller) processUpdateScheduledEcho(
+	ctx context.Context,
+	oldScheduledEcho, newScheduledEcho *echov1alpha1.ScheduledEcho,
+) error {
+	if !oldScheduledEcho.HasChanged(newScheduledEcho) {
+		c.logger.Debug("scheduled echo has not changed, skipping")
+		return nil
+	}
+	cronjob := createCronJob(newScheduledEcho, c.namespace)
+
+	_, err := c.kubeClientSet.BatchV1beta1().
+		CronJobs(c.namespace).
+		Update(ctx, cronjob, metav1.UpdateOptions{})
 	return err
 }
 
