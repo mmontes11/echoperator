@@ -28,6 +28,35 @@ deps:	### Optimize dependencies
 codegen: vendor ### Generate code
 	@bash ./codegen/codegen.sh
 
+.PHONY: fmt
+fmt: ### Format
+	@gofmt -s -w .
+
+.PHONY: vet
+vet: ### Vet
+	@go vet ./...
+
+### Lint
+.PHONY: lint
+lint: fmt vet
+
+### Clean test 
+.PHONY: test-clean
+test-clean: ### Clean test cache
+	@go clean -testcache ./...
+
+.PHONY: test
+test: lint ### Run tests
+	@go test -v  -coverprofile=cover.out -timeout 10s ./...
+
+.PHONY: cover
+cover: test ### Run tests and generate coverage
+	@go tool cover -html=cover.out -o=cover.html
+
+.PHONY: mocks
+mocks: ### Generate mocks
+	@mockery --all --output internal/mocks
+
 .PHONY: run  
 run: ### Run example
 	@go run cmd/main.go

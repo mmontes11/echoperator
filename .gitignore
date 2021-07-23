@@ -17,3 +17,6 @@ vendor/
 
 # Env vars
 .env
+
+# Cover
+cover.*
