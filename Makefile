@@ -58,8 +58,8 @@ mocks: ### Generate mocks
 	@mockery --all --output internal/mocks
 
 .PHONY: run  
-run: ### Run example
-	@go run cmd/main.go
+run: ### Run controller
+	@go run cmd/*.go
 
 .PHONY: clean
 clean: ### Clean build files

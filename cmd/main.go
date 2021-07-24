@@ -2,11 +2,11 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 
-	"github.com/gotway/gotway/pkg/env"
 	"github.com/gotway/gotway/pkg/log"
 
 	"github.com/mmontes11/echoperator/pkg/controller"
@@ -18,15 +18,11 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-var (
-	KubeConfig = env.Get("KUBECONFIG", "")
-	Namespace  = env.Get("NAMESPACE", "default")
-	NumWorkers = env.GetInt("NUM_WORKERS", 4)
-	Env        = env.Get("ENV", "local")
-	LogLevel   = env.Get("LOG_LEVEL", "debug")
-)
-
 func main() {
+	config, err := getConfig()
+	if err != nil {
+		panic(fmt.Errorf("error getting config %v", err))
+	}
 	ctx, _ := signal.NotifyContext(context.Background(), []os.Signal{
 		os.Interrupt,
 		syscall.SIGINT,
@@ -37,28 +33,30 @@ func main() {
 	}...)
 	logger := log.NewLogger(log.Fields{
 		"service": "echoperator",
-	}, Env, LogLevel, os.Stdout)
+	}, config.env, config.logLevel, os.Stdout)
 
-	var config *rest.Config
-	var err error
-	if KubeConfig != "" {
-		config, err = clientcmd.BuildConfigFromFlags("", KubeConfig)
+	logger.Debugf("config %v", config)
+
+	var restConfig *rest.Config
+	var errKubeConfig error
+	if config.kubeConfig != "" {
+		restConfig, errKubeConfig = clientcmd.BuildConfigFromFlags("", config.kubeConfig)
 	} else {
-		config, err = rest.InClusterConfig()
+		restConfig, errKubeConfig = rest.InClusterConfig()
 	}
-	if err != nil {
+	if errKubeConfig != nil {
 		logger.Fatal("error getting kubernetes config ", err)
 	}
 
-	kubeClientSet, err := kubernetes.NewForConfig(config)
+	kubeClientSet, err := kubernetes.NewForConfig(restConfig)
 	if err != nil {
 		logger.Fatal("error getting kubernetes client ", err)
 	}
-	apiextensionsClientSet, err := apiextensionsclient.NewForConfig(config)
+	apiextensionsClientSet, err := apiextensionsclient.NewForConfig(restConfig)
 	if err != nil {
 		logger.Fatal("error creating api extensions client ", err)
 	}
-	echov1alpha1ClientSet, err := echov1alpha1clientset.NewForConfig(config)
+	echov1alpha1ClientSet, err := echov1alpha1clientset.NewForConfig(restConfig)
 	if err != nil {
 		logger.Fatal("error creating echo client ", err)
 	}
@@ -67,7 +65,7 @@ func main() {
 		kubeClientSet,
 		apiextensionsClientSet,
 		echov1alpha1ClientSet,
-		Namespace,
+		config.namespace,
 		logger.WithField("type", "controller"),
 	)
 
@@ -75,7 +73,7 @@ func main() {
 		logger.Fatal("error registering CRDs ", err)
 	}
 
-	if err := ctrl.Run(ctx, NumWorkers); err != nil {
+	if err := ctrl.Run(ctx, config.numWorkers); err != nil {
 		logger.Fatal("error running controller ", err)
 	}
 }
