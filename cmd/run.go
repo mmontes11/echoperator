@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"time"
 
 	"github.com/gotway/gotway/pkg/log"
 	"github.com/mmontes11/echoperator/pkg/controller"
@@ -20,7 +19,7 @@ type runner struct {
 }
 
 func (r *runner) start(ctx context.Context) {
-	if r.config.ha {
+	if r.config.ha.enabled {
 		r.logger.Info("starting HA controller")
 		r.runHA(ctx)
 	} else {
@@ -36,22 +35,26 @@ func (r *runner) runSingleNode(ctx context.Context) {
 }
 
 func (r *runner) runHA(ctx context.Context) {
+	if r.config.ha == (haConfig{}) || !r.config.ha.enabled {
+		r.logger.Fatal("HA config not set or not enabled")
+	}
+
 	lock := &resourcelock.LeaseLock{
 		LeaseMeta: metav1.ObjectMeta{
-			Name:      "echoperator",
+			Name:      r.config.ha.leaseLockName,
 			Namespace: r.config.namespace,
 		},
 		Client: r.clientset.CoordinationV1(),
 		LockConfig: resourcelock.ResourceLockConfig{
-			Identity: r.config.nodeId,
+			Identity: r.config.ha.nodeId,
 		},
 	}
 	leaderelection.RunOrDie(ctx, leaderelection.LeaderElectionConfig{
 		Lock:            lock,
 		ReleaseOnCancel: true,
-		LeaseDuration:   60 * time.Second,
-		RenewDeadline:   15 * time.Second,
-		RetryPeriod:     5 * time.Second,
+		LeaseDuration:   r.config.ha.leaseDuration,
+		RenewDeadline:   r.config.ha.renewDeadline,
+		RetryPeriod:     r.config.ha.retryPeriod,
 		Callbacks: leaderelection.LeaderCallbacks{
 			OnStartedLeading: func(ctx context.Context) {
 				r.logger.Info("start leading")
@@ -61,7 +64,7 @@ func (r *runner) runHA(ctx context.Context) {
 				r.logger.Info("stopped leading")
 			},
 			OnNewLeader: func(identity string) {
-				if identity == r.config.nodeId {
+				if identity == r.config.ha.nodeId {
 					r.logger.Info("obtained leadership")
 					return
 				}

@@ -80,8 +80,8 @@ func getLogger(config config) log.Logger {
 	logger := log.NewLogger(log.Fields{
 		"service": "echoperator",
 	}, config.env, config.logLevel, os.Stdout)
-	if config.ha {
-		return logger.WithField("node", config.nodeId)
+	if config.ha.enabled {
+		return logger.WithField("node", config.ha.nodeId)
 	}
-	return logger.WithField("node", "standalone")
+	return logger
 }
