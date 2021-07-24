@@ -1,8 +1,11 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/gotway/gotway/pkg/log"
 
@@ -55,7 +58,22 @@ func main() {
 		logger.WithField("type", "controller"),
 	)
 
-	run(ctrl, kubeClientSet, config, logger)
+	ctx, _ := signal.NotifyContext(context.Background(), []os.Signal{
+		os.Interrupt,
+		syscall.SIGINT,
+		syscall.SIGTERM,
+		syscall.SIGKILL,
+		syscall.SIGHUP,
+		syscall.SIGQUIT,
+	}...)
+
+	runner := newRunner(
+		ctrl,
+		kubeClientSet,
+		config,
+		logger.WithField("type", "runner"),
+	)
+	runner.start(ctx)
 }
 
 func getLogger(config config) log.Logger {

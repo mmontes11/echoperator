@@ -1,8 +1,7 @@
 package v1alpha1
 
 import (
-	crd "github.com/mmontes11/echoperator/pkg/echo"
-	version "github.com/mmontes11/echoperator/pkg/echo/version"
+	"github.com/mmontes11/echoperator/pkg/echo"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"k8s.io/apimachinery/pkg/runtime"
@@ -11,8 +10,8 @@ import (
 
 var (
 	SchemeGroupVersion = schema.GroupVersion{
-		Group:   crd.GroupName,
-		Version: version.V1alpha1,
+		Group:   echo.GroupName,
+		Version: echo.V1alpha1,
 	}
 	SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes)
 	AddToScheme   = SchemeBuilder.AddToScheme

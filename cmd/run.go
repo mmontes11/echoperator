@@ -2,9 +2,6 @@ package main
 
 import (
 	"context"
-	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
 	"github.com/gotway/gotway/pkg/log"
@@ -15,67 +12,38 @@ import (
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
 )
 
-var sigs = []os.Signal{
-	os.Interrupt,
-	syscall.SIGINT,
-	syscall.SIGTERM,
-	syscall.SIGKILL,
-	syscall.SIGHUP,
-	syscall.SIGQUIT,
+type runner struct {
+	ctrl      *controller.Controller
+	clientset *kubernetes.Clientset
+	config    config
+	logger    log.Logger
 }
 
-func run(
-	ctrl *controller.Controller,
-	clientset *kubernetes.Clientset,
-	config config,
-	logger log.Logger,
-) {
-	if config.ha {
-		runHA(ctrl, clientset, config, logger)
+func (r *runner) start(ctx context.Context) {
+	if r.config.ha {
+		r.logger.Info("starting HA controller")
+		r.runHA(ctx)
 	} else {
-		runStandalone(ctrl, config, logger)
+		r.logger.Info("starting standalone controller")
+		r.runSingleNode(ctx)
 	}
 }
 
-func runSingleNode(
-	ctx context.Context,
-	ctrl *controller.Controller,
-	config config,
-	logger log.Logger,
-) {
-	if err := ctrl.RegisterCustomResourceDefinitions(ctx); err != nil {
-		logger.Fatal("error registering CRDs ", err)
-	}
-	if err := ctrl.Run(ctx, config.numWorkers); err != nil {
-		logger.Fatal("error running controller ", err)
+func (r *runner) runSingleNode(ctx context.Context) {
+	if err := r.ctrl.Run(ctx, r.config.numWorkers); err != nil {
+		r.logger.Fatal("error running controller ", err)
 	}
 }
 
-func runStandalone(
-	ctrl *controller.Controller,
-	config config,
-	logger log.Logger,
-) {
-	ctx, _ := signal.NotifyContext(context.Background(), sigs...)
-	runSingleNode(ctx, ctrl, config, logger)
-}
-
-func runHA(
-	ctrl *controller.Controller,
-	clientset *kubernetes.Clientset,
-	config config,
-	logger log.Logger,
-) {
-	ctx, _ := signal.NotifyContext(context.Background(), sigs...)
-
+func (r *runner) runHA(ctx context.Context) {
 	lock := &resourcelock.LeaseLock{
 		LeaseMeta: metav1.ObjectMeta{
 			Name:      "echoperator",
-			Namespace: config.namespace,
+			Namespace: r.config.namespace,
 		},
-		Client: clientset.CoordinationV1(),
+		Client: r.clientset.CoordinationV1(),
 		LockConfig: resourcelock.ResourceLockConfig{
-			Identity: config.nodeId,
+			Identity: r.config.nodeId,
 		},
 	}
 	leaderelection.RunOrDie(ctx, leaderelection.LeaderElectionConfig{
@@ -86,19 +54,33 @@ func runHA(
 		RetryPeriod:     5 * time.Second,
 		Callbacks: leaderelection.LeaderCallbacks{
 			OnStartedLeading: func(ctx context.Context) {
-				logger.Info("start leading")
-				runSingleNode(ctx, ctrl, config, logger)
+				r.logger.Info("start leading")
+				r.runSingleNode(ctx)
 			},
 			OnStoppedLeading: func() {
-				logger.Info("stopped leading")
+				r.logger.Info("stopped leading")
 			},
 			OnNewLeader: func(identity string) {
-				if identity == config.nodeId {
-					logger.Info("obtained leadership")
+				if identity == r.config.nodeId {
+					r.logger.Info("obtained leadership")
 					return
 				}
-				logger.Infof("leader elected: '%s'", identity)
+				r.logger.Infof("leader elected: '%s'", identity)
 			},
 		},
 	})
+}
+
+func newRunner(
+	ctrl *controller.Controller,
+	clientset *kubernetes.Clientset,
+	config config,
+	logger log.Logger,
+) *runner {
+	return &runner{
+		ctrl:      ctrl,
+		clientset: clientset,
+		config:    config,
+		logger:    logger,
+	}
 }

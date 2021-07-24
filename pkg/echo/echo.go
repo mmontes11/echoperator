@@ -24,108 +24,11 @@ SOFTWARE.
 
 package echo
 
-import (
-	version "github.com/mmontes11/echoperator/pkg/echo/version"
-	extv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-)
-
 const (
 	GroupName = "mmontes.io"
 
-	EchoKind     string = "Echo"
-	EchoListKind string = "EchoList"
-	EchoPlural   string = "echos"
-	EchoSingular string = "echo"
-	EchoCRDName  string = EchoPlural + "." + GroupName
+	V1alpha1 = "v1alpha1"
 
-	ScheduledEchoKind     string = "ScheduledEcho"
-	ScheduledEchoListKind string = "ScheduledEchoList"
-	ScheduledEchoPlural   string = "scheduledechos"
-	ScheduledEchoSingular string = "scheduledecho"
-	ScheduledEchoCRDName  string = ScheduledEchoPlural + "." + GroupName
+	EchoKind          string = "Echo"
+	ScheduledEchoKind string = "ScheduledEcho"
 )
-
-var (
-	EchoShortNames          []string = []string{"ec"}
-	ScheduledEchoShortNames []string = []string{"sec"}
-)
-
-var EchoCRD = extv1.CustomResourceDefinition{
-	ObjectMeta: metav1.ObjectMeta{
-		Name: EchoCRDName,
-	},
-	Spec: extv1.CustomResourceDefinitionSpec{
-		Group: GroupName,
-		Names: extv1.CustomResourceDefinitionNames{
-			Kind:       EchoKind,
-			ListKind:   EchoListKind,
-			Plural:     EchoPlural,
-			Singular:   EchoSingular,
-			ShortNames: EchoShortNames,
-		},
-		Scope: extv1.NamespaceScoped,
-		Versions: []extv1.CustomResourceDefinitionVersion{
-			{
-				Name:    version.V1alpha1,
-				Served:  true,
-				Storage: true,
-				Schema: &extv1.CustomResourceValidation{
-					OpenAPIV3Schema: &extv1.JSONSchemaProps{
-						Type: "object",
-						Properties: map[string]extv1.JSONSchemaProps{
-							"spec": {
-								Type: "object",
-								Properties: map[string]extv1.JSONSchemaProps{
-									"message": {Type: "string"},
-								},
-								Required: []string{"message"},
-							},
-						},
-						Required: []string{"spec"},
-					},
-				},
-			},
-		},
-	},
-}
-
-var ScheduledEchoCRD = extv1.CustomResourceDefinition{
-	ObjectMeta: metav1.ObjectMeta{
-		Name: ScheduledEchoCRDName,
-	},
-	Spec: extv1.CustomResourceDefinitionSpec{
-		Group: GroupName,
-		Names: extv1.CustomResourceDefinitionNames{
-			Kind:       ScheduledEchoKind,
-			ListKind:   ScheduledEchoListKind,
-			Plural:     ScheduledEchoPlural,
-			Singular:   ScheduledEchoSingular,
-			ShortNames: ScheduledEchoShortNames,
-		},
-		Scope: extv1.NamespaceScoped,
-		Versions: []extv1.CustomResourceDefinitionVersion{
-			{
-				Name:    version.V1alpha1,
-				Served:  true,
-				Storage: true,
-				Schema: &extv1.CustomResourceValidation{
-					OpenAPIV3Schema: &extv1.JSONSchemaProps{
-						Type: "object",
-						Properties: map[string]extv1.JSONSchemaProps{
-							"spec": {
-								Type: "object",
-								Properties: map[string]extv1.JSONSchemaProps{
-									"message":  {Type: "string"},
-									"schedule": {Type: "string"},
-								},
-								Required: []string{"message", "schedule"},
-							},
-						},
-						Required: []string{"spec"},
-					},
-				},
-			},
-		},
-	},
-}

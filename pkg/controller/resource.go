@@ -3,7 +3,6 @@ package controller
 import (
 	echo "github.com/mmontes11/echoperator/pkg/echo"
 	echov1alpha1 "github.com/mmontes11/echoperator/pkg/echo/v1alpha1"
-	"github.com/mmontes11/echoperator/pkg/echo/version"
 	batchv1 "k8s.io/api/batch/v1"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
@@ -18,7 +17,7 @@ func createJob(newEcho *echov1alpha1.Echo, namespace string) *batchv1.Job {
 			Labels:    make(map[string]string),
 			OwnerReferences: []metav1.OwnerReference{
 				{
-					APIVersion: version.V1alpha1,
+					APIVersion: echo.V1alpha1,
 					Kind:       echo.EchoKind,
 					Name:       newEcho.ObjectMeta.Name,
 					UID:        newEcho.UID,
@@ -29,7 +28,10 @@ func createJob(newEcho *echov1alpha1.Echo, namespace string) *batchv1.Job {
 	}
 }
 
-func createCronJob(newScheduledEcho *echov1alpha1.ScheduledEcho, namespace string) *batchv1beta1.CronJob {
+func createCronJob(
+	newScheduledEcho *echov1alpha1.ScheduledEcho,
+	namespace string,
+) *batchv1beta1.CronJob {
 	return &batchv1beta1.CronJob{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      newScheduledEcho.ObjectMeta.Name,
@@ -37,8 +39,8 @@ func createCronJob(newScheduledEcho *echov1alpha1.ScheduledEcho, namespace strin
 			Labels:    make(map[string]string),
 			OwnerReferences: []metav1.OwnerReference{
 				{
-					APIVersion: version.V1alpha1,
-					Kind:       echo.EchoKind,
+					APIVersion: echo.V1alpha1,
+					Kind:       echo.ScheduledEchoKind,
 					Name:       newScheduledEcho.ObjectMeta.Name,
 					UID:        newScheduledEcho.UID,
 				},
@@ -53,7 +55,11 @@ func createCronJob(newScheduledEcho *echov1alpha1.ScheduledEcho, namespace strin
 					Namespace:    namespace,
 					Labels:       make(map[string]string),
 				},
-				Spec: createJobSpec(newScheduledEcho.Name, namespace, newScheduledEcho.Spec.Message),
+				Spec: createJobSpec(
+					newScheduledEcho.Name,
+					namespace,
+					newScheduledEcho.Spec.Message,
+				),
 			},
 		},
 	}
