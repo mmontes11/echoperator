@@ -35,11 +35,14 @@ func getConfig() (config, error) {
 
 	var nodeId string
 	if ha {
-		hostname, err := os.Hostname()
-		if err != nil {
-			return config{}, fmt.Errorf("error getting node id %v", err)
+		nodeId = env.Get("NODE_ID", "")
+		if nodeId == "" {
+			hostname, err := os.Hostname()
+			if err != nil {
+				return config{}, fmt.Errorf("error getting node id %v", err)
+			}
+			nodeId = hostname
 		}
-		nodeId = hostname
 	}
 
 	return config{

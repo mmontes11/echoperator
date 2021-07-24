@@ -20,3 +20,6 @@ vendor/
 
 # Cover
 cover.*
+
+# Debugger
+__debug_bin
