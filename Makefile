@@ -1,4 +1,5 @@
 UNAME := $(uname -s)
+VERSION := $(git describe --tags $(git rev-list --tags --max-count=1))
 LD_FLAGS := -X main.version=$(VERSION) -s -w
 
 export CGO_ENABLED=0
@@ -59,7 +60,7 @@ mocks: ### Generate mocks
 
 .PHONY: run  
 run: ### Run controller
-	@go run cmd/*.go
+	@CGO_ENABLED=1; go run -race cmd/*.go
 
 .PHONY: clean
 clean: ### Clean build files

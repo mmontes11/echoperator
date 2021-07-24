@@ -5,7 +5,7 @@ set -e
 docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
 
 git fetch --all
-tag=$(git describe --abbrev=0 --tags)
+tag=$(git describe --tags $(git rev-list --tags --max-count=1))
 name="echoperator"
 image="mmontes11/$name"
 platform="linux/amd64,linux/arm64,linux/arm"
