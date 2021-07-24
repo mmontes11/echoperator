@@ -9,6 +9,8 @@ import (
 
 	"github.com/gotway/gotway/pkg/log"
 
+	"github.com/mmontes11/echoperator/internal/config"
+	"github.com/mmontes11/echoperator/internal/runner"
 	"github.com/mmontes11/echoperator/pkg/controller"
 	echov1alpha1clientset "github.com/mmontes11/echoperator/pkg/echo/v1alpha1/apis/clientset/versioned"
 
@@ -19,7 +21,7 @@ import (
 )
 
 func main() {
-	config, err := getConfig()
+	config, err := config.GetConfig()
 	if err != nil {
 		panic(fmt.Errorf("error getting config %v", err))
 	}
@@ -28,8 +30,8 @@ func main() {
 
 	var restConfig *rest.Config
 	var errKubeConfig error
-	if config.kubeConfig != "" {
-		restConfig, errKubeConfig = clientcmd.BuildConfigFromFlags("", config.kubeConfig)
+	if config.KubeConfig != "" {
+		restConfig, errKubeConfig = clientcmd.BuildConfigFromFlags("", config.KubeConfig)
 	} else {
 		restConfig, errKubeConfig = rest.InClusterConfig()
 	}
@@ -54,7 +56,7 @@ func main() {
 		kubeClientSet,
 		apiextensionsClientSet,
 		echov1alpha1ClientSet,
-		config.namespace,
+		config.Namespace,
 		logger.WithField("type", "controller"),
 	)
 
@@ -67,21 +69,21 @@ func main() {
 		syscall.SIGQUIT,
 	}...)
 
-	runner := newRunner(
+	r := runner.NewRunner(
 		ctrl,
 		kubeClientSet,
 		config,
 		logger.WithField("type", "runner"),
 	)
-	runner.start(ctx)
+	r.Start(ctx)
 }
 
-func getLogger(config config) log.Logger {
+func getLogger(config config.Config) log.Logger {
 	logger := log.NewLogger(log.Fields{
 		"service": "echoperator",
-	}, config.env, config.logLevel, os.Stdout)
-	if config.ha.enabled {
-		return logger.WithField("node", config.ha.nodeId)
+	}, config.Env, config.LogLevel, os.Stdout)
+	if config.HA.Enabled {
+		return logger.WithField("node", config.HA.NodeId)
 	}
 	return logger
 }
