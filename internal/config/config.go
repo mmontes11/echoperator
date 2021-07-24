@@ -8,7 +8,7 @@ import (
 	"github.com/gotway/gotway/pkg/env"
 )
 
-type HAConfig struct {
+type HA struct {
 	Enabled       bool
 	NodeId        string
 	LeaseLockName string
@@ -17,9 +17,9 @@ type HAConfig struct {
 	RetryPeriod   time.Duration
 }
 
-func (c HAConfig) String() string {
+func (c HA) String() string {
 	return fmt.Sprintf(
-		"HAConfig{Enabled='%v'NodeId='%s'LeaseLockName='%s'LeaseDuration='%v'RenewDeadline='%v'RetryPeriod='%v'}",
+		"HA{Enabled='%v'NodeId='%s'LeaseLockName='%s'LeaseDuration='%v'RenewDeadline='%v'RetryPeriod='%v'}",
 		c.Enabled,
 		c.NodeId,
 		c.LeaseLockName,
@@ -29,22 +29,39 @@ func (c HAConfig) String() string {
 	)
 }
 
+type Metrics struct {
+	Enabled bool
+	Path    string
+	Port    string
+}
+
+func (m Metrics) String() string {
+	return fmt.Sprintf(
+		"Metrics{Enabled='%v'Path='%s'Port='%s'}",
+		m.Enabled,
+		m.Path,
+		m.Port,
+	)
+}
+
 type Config struct {
 	KubeConfig string
 	Namespace  string
 	NumWorkers int
-	HA         HAConfig
+	HA         HA
+	Metrics    Metrics
 	Env        string
 	LogLevel   string
 }
 
 func (c Config) String() string {
 	return fmt.Sprintf(
-		"Config{KubeConfig='%s'Namespace='%s'NumWorkers='%d'HA='%v'Env='%s'LogLevel='%s'}",
+		"Config{KubeConfig='%s'Namespace='%s'NumWorkers='%d'HA='%v'Metrics='%v'Env='%s'LogLevel='%s'}",
 		c.KubeConfig,
 		c.Namespace,
 		c.NumWorkers,
 		c.HA,
+		c.Metrics,
 		c.Env,
 		c.LogLevel,
 	)
@@ -69,13 +86,18 @@ func GetConfig() (Config, error) {
 		KubeConfig: env.Get("KUBECONFIG", ""),
 		Namespace:  env.Get("NAMESPACE", "default"),
 		NumWorkers: env.GetInt("NUM_WORKERS", 4),
-		HA: HAConfig{
+		HA: HA{
 			Enabled:       ha,
 			NodeId:        nodeId,
 			LeaseLockName: env.Get("HA_LEASE_LOCK_NAME", "echoperator"),
 			LeaseDuration: env.GetDuration("HA_LEASE_DURATION_SECONDS", 15) * time.Second,
 			RenewDeadline: env.GetDuration("HA_RENEW_DEADLINE_SECONDS", 10) * time.Second,
 			RetryPeriod:   env.GetDuration("HA_RETRY_PERIOD_SECONDS", 2) * time.Second,
+		},
+		Metrics: Metrics{
+			Enabled: env.GetBool("METRICS_ENABLED", true),
+			Path:    env.Get("METRICS_PATH", "/metrics"),
+			Port:    env.Get("METRICS_PORT", "2112"),
 		},
 		Env:      env.Get("ENV", "local"),
 		LogLevel: env.Get("LOG_LEVEL", "debug"),

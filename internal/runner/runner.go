@@ -36,7 +36,7 @@ func (r *Runner) runSingleNode(ctx context.Context) {
 }
 
 func (r *Runner) runHA(ctx context.Context) {
-	if r.config.HA == (config.HAConfig{}) || !r.config.HA.Enabled {
+	if r.config.HA == (config.HA{}) || !r.config.HA.Enabled {
 		r.logger.Fatal("HA config not set or not enabled")
 	}
 

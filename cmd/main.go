@@ -8,6 +8,7 @@ import (
 	"syscall"
 
 	"github.com/gotway/gotway/pkg/log"
+	"github.com/gotway/gotway/pkg/metrics"
 
 	"github.com/mmontes11/echoperator/internal/config"
 	"github.com/mmontes11/echoperator/internal/runner"
@@ -60,7 +61,7 @@ func main() {
 		logger.WithField("type", "controller"),
 	)
 
-	ctx, _ := signal.NotifyContext(context.Background(), []os.Signal{
+	ctx, cancel := signal.NotifyContext(context.Background(), []os.Signal{
 		os.Interrupt,
 		syscall.SIGINT,
 		syscall.SIGTERM,
@@ -68,6 +69,19 @@ func main() {
 		syscall.SIGHUP,
 		syscall.SIGQUIT,
 	}...)
+	defer cancel()
+
+	if config.Metrics.Enabled {
+		m := metrics.New(
+			metrics.Options{
+				Path: config.Metrics.Path,
+				Port: config.Metrics.Port,
+			},
+			logger.WithField("type", "metrics"),
+		)
+		go m.Start()
+		defer m.Stop()
+	}
 
 	r := runner.NewRunner(
 		ctrl,
