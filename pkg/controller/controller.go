@@ -140,7 +140,7 @@ func New(
 
 	kubeInformerFactory := kubeinformers.NewSharedInformerFactory(kubeClientSet, 10*time.Second)
 	jobInformer := kubeInformerFactory.Batch().V1().Jobs().Informer()
-	cronjobInformer := kubeInformerFactory.Batch().V1beta1().CronJobs().Informer()
+	cronjobInformer := kubeInformerFactory.Batch().V1().CronJobs().Informer()
 
 	queue := workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter())
 
