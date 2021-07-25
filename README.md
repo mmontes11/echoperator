@@ -8,3 +8,12 @@
 [![Artifact HUB](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/echoperator)](https://artifacthub.io/packages/search?repo=echoperator)
 
 Simple kubernetes operator for handling echo CRDs.
+
+#### Installation 🌱
+
+```bash
+helm repo add mmontes https://charts.mmontes-dev.duckdns.org
+```
+```bash
+helm install echoperator mmontes/echoperator
+```
