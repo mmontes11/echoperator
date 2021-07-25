@@ -1,5 +1,5 @@
 UNAME := $(uname -s)
-VERSION := $(git describe --tags $(git rev-list --tags --max-count=1))
+VERSION := $(git describe --abbrev=0 --tags)
 LD_FLAGS := -X main.version=$(VERSION) -s -w
 
 export CGO_ENABLED=0

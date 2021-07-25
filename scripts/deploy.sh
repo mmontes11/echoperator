@@ -7,7 +7,7 @@ release="echoperator"
 chart="$repo/$release"
 
 git fetch --all
-tag=$(git describe --tags $(git rev-list --tags --max-count=1))
+tag=$(git describe --abbrev=0 --tags)
 
 helm repo add "$repo" https://charts.mmontes-dev.duckdns.org
 helm repo update
