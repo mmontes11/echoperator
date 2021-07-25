@@ -4,7 +4,6 @@ import (
 	echo "github.com/mmontes11/echoperator/pkg/echo"
 	echov1alpha1 "github.com/mmontes11/echoperator/pkg/echo/v1alpha1"
 	batchv1 "k8s.io/api/batch/v1"
-	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -29,8 +28,8 @@ func createJob(newEcho *echov1alpha1.Echo, namespace string) *batchv1.Job {
 func createCronJob(
 	newScheduledEcho *echov1alpha1.ScheduledEcho,
 	namespace string,
-) *batchv1beta1.CronJob {
-	return &batchv1beta1.CronJob{
+) *batchv1.CronJob {
+	return &batchv1.CronJob{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      newScheduledEcho.ObjectMeta.Name,
 			Namespace: namespace,
@@ -42,10 +41,10 @@ func createCronJob(
 				),
 			},
 		},
-		Spec: batchv1beta1.CronJobSpec{
+		Spec: batchv1.CronJobSpec{
 			Schedule:          newScheduledEcho.Spec.Schedule,
-			ConcurrencyPolicy: batchv1beta1.ForbidConcurrent,
-			JobTemplate: batchv1beta1.JobTemplateSpec{
+			ConcurrencyPolicy: batchv1.ForbidConcurrent,
+			JobTemplate: batchv1.JobTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					GenerateName: newScheduledEcho.Name + "-",
 					Namespace:    namespace,

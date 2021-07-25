@@ -79,7 +79,10 @@ func (c *Controller) processAddEcho(ctx context.Context, echo *echov1alpha1.Echo
 	return err
 }
 
-func (c *Controller) processAddScheduledEcho(ctx context.Context, scheduledEcho *echov1alpha1.ScheduledEcho) error {
+func (c *Controller) processAddScheduledEcho(
+	ctx context.Context,
+	scheduledEcho *echov1alpha1.ScheduledEcho,
+) error {
 	cronjob := createCronJob(scheduledEcho, c.namespace)
 	exists, err := resourceExists(cronjob, c.cronjobInformer.GetIndexer())
 	if err != nil {
@@ -90,7 +93,7 @@ func (c *Controller) processAddScheduledEcho(ctx context.Context, scheduledEcho 
 		return nil
 	}
 
-	_, err = c.kubeClientSet.BatchV1beta1().
+	_, err = c.kubeClientSet.BatchV1().
 		CronJobs(c.namespace).
 		Create(ctx, cronjob, metav1.CreateOptions{})
 	return err
@@ -106,7 +109,7 @@ func (c *Controller) processUpdateScheduledEcho(
 	}
 	cronjob := createCronJob(newScheduledEcho, c.namespace)
 
-	_, err := c.kubeClientSet.BatchV1beta1().
+	_, err := c.kubeClientSet.BatchV1().
 		CronJobs(c.namespace).
 		Update(ctx, cronjob, metav1.UpdateOptions{})
 	return err
