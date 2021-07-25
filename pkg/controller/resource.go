@@ -16,12 +16,10 @@ func createJob(newEcho *echov1alpha1.Echo, namespace string) *batchv1.Job {
 			Namespace: namespace,
 			Labels:    make(map[string]string),
 			OwnerReferences: []metav1.OwnerReference{
-				{
-					APIVersion: echo.V1alpha1,
-					Kind:       echo.EchoKind,
-					Name:       newEcho.ObjectMeta.Name,
-					UID:        newEcho.UID,
-				},
+				*metav1.NewControllerRef(
+					newEcho,
+					echov1alpha1.SchemeGroupVersion.WithKind(echo.EchoKind),
+				),
 			},
 		},
 		Spec: createJobSpec(newEcho.Name, namespace, newEcho.Spec.Message),
@@ -38,12 +36,10 @@ func createCronJob(
 			Namespace: namespace,
 			Labels:    make(map[string]string),
 			OwnerReferences: []metav1.OwnerReference{
-				{
-					APIVersion: echo.V1alpha1,
-					Kind:       echo.ScheduledEchoKind,
-					Name:       newScheduledEcho.ObjectMeta.Name,
-					UID:        newScheduledEcho.UID,
-				},
+				*metav1.NewControllerRef(
+					newScheduledEcho,
+					echov1alpha1.SchemeGroupVersion.WithKind(echo.ScheduledEchoKind),
+				),
 			},
 		},
 		Spec: batchv1beta1.CronJobSpec{
