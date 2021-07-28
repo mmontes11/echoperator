@@ -11,7 +11,6 @@ import (
 	echov1alpha1clientset "github.com/mmontes11/echoperator/pkg/echo/v1alpha1/apis/clientset/versioned"
 	echoinformers "github.com/mmontes11/echoperator/pkg/echo/v1alpha1/apis/informers/externalversions"
 
-	extclientset "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
 	kubeinformers "k8s.io/client-go/informers"
@@ -22,7 +21,6 @@ import (
 
 type Controller struct {
 	kubeClientSet kubernetes.Interface
-	extClientSet  extclientset.Interface
 
 	echoInformer          cache.SharedIndexInformer
 	jobInformer           cache.SharedIndexInformer
@@ -125,7 +123,6 @@ func (c *Controller) updateScheduledEcho(oldObj, newObj interface{}) {
 
 func New(
 	kubeClientSet kubernetes.Interface,
-	extClientSet extclientset.Interface,
 	echoClientSet echov1alpha1clientset.Interface,
 	namespace string,
 	logger log.Logger,
@@ -146,7 +143,6 @@ func New(
 
 	ctrl := &Controller{
 		kubeClientSet: kubeClientSet,
-		extClientSet:  extClientSet,
 
 		echoInformer:          echoInformer,
 		jobInformer:           jobInformer,

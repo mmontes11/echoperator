@@ -15,7 +15,6 @@ import (
 	"github.com/mmontes11/echoperator/pkg/controller"
 	echov1alpha1clientset "github.com/mmontes11/echoperator/pkg/echo/v1alpha1/apis/clientset/versioned"
 
-	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -44,10 +43,6 @@ func main() {
 	if err != nil {
 		logger.Fatal("error getting kubernetes client ", err)
 	}
-	apiextensionsClientSet, err := apiextensionsclient.NewForConfig(restConfig)
-	if err != nil {
-		logger.Fatal("error creating api extensions client ", err)
-	}
 	echov1alpha1ClientSet, err := echov1alpha1clientset.NewForConfig(restConfig)
 	if err != nil {
 		logger.Fatal("error creating echo client ", err)
@@ -55,7 +50,6 @@ func main() {
 
 	ctrl := controller.New(
 		kubeClientSet,
-		apiextensionsClientSet,
 		echov1alpha1ClientSet,
 		config.Namespace,
 		logger.WithField("type", "controller"),
