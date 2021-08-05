@@ -12,6 +12,8 @@ Simple Kubernetes operator for handling `echo` CRDs.
 
 [Kubernetes operator pattern](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/) implementation using the [client-go](https://github.com/kubernetes/client-go) library. Altough there are a bunch of frameworks for doing this ([kubebuilder](https://book.kubebuilder.io/), [operator framework](https://operatorframework.io/) ...), this example operator uses the tools provided by [client-go](https://github.com/kubernetes/client-go) for simplicity and flexibility reasons. 
 
+[Medium article](https://betterprogramming.pub/building-a-highly-available-kubernetes-operator-using-golang-fe4a44c395c2) that explains how to build this operator step by step.
+
 ### Features
 
 - Simple example to understand how a Kubernetes operator works.
