@@ -1,4 +1,5 @@
-// +build codegen
+//go:build hack
+// +build hack
 
 /*
 MIT License
@@ -24,6 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package codegen
+package hack
 
 import _ "k8s.io/code-generator"

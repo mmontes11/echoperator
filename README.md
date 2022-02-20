@@ -1,4 +1,4 @@
-# echoperator 🤖
+# 🤖 echoperator 
 
 [![CI](https://github.com/mmontes11/echoperator/actions/workflows/ci.yml/badge.svg)](https://github.com/mmontes11/echoperator/actions/workflows/ci.yml)
 [![Release](https://github.com/mmontes11/echoperator/actions/workflows/release.yml/badge.svg)](https://github.com/mmontes11/echoperator/actions/workflows/release.yml)
@@ -47,14 +47,14 @@ The helm chart installs automatically the [Custom Resource Definitions](https://
 
 ###### Hello world
 
-- Client creates a [hello world Echo CRD](./manifests/hello-world.yml).
+- Client creates a [hello world Echo CRD](./manifests/examples/hello-world.yml).
 - Operator receives a `Echo` added event.
 - Operator reads the `message` property from the `Echo` and creates a `Job` resource.
 - The `Job` resource creates a `Pod` that performs a `echo` command with the `message` property.
 
 ###### Scheduled hello world
 
-- Client creates a [hello world ScheduledEcho CRD](./manifests/hello-world-scheduled.yml).
+- Client creates a [hello world ScheduledEcho CRD](./manifests/examples/hello-world-scheduled.yml).
 - Operator receives a `ScheduledEcho` added event.
 - Operator reads the `message` and `schedule` property from the `ScheduledEcho` and creates a `CronJob`.
 - The `CronJob` schedules a `Job` creation using the `schedule` property.

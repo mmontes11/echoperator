@@ -25,10 +25,6 @@ vendor: ### Vendor dependencies
 deps:	### Optimize dependencies
 	@go mod tidy
 
-.PHONY: codegen
-codegen: vendor ### Generate code
-	@bash ./codegen/codegen.sh
-
 .PHONY: fmt
 fmt: ### Format
 	@gofmt -s -w .
@@ -58,8 +54,16 @@ cover: test ### Run tests and generate coverage
 mocks: ### Generate mocks
 	@mockery --all --output internal/mocks
 
+.PHONY: generate
+generate: vendor ### Generate code
+	@bash ./hack/hack.sh
+
+.PHONY: install
+install: ## Install CRDs
+	@kubectl apply -f manifests/crds
+
 .PHONY: run  
-run: ### Run controller
+run: install ### Run controller
 	@CGO_ENABLED=1; go run -race cmd/*.go
 
 .PHONY: clean
@@ -68,6 +72,6 @@ clean: ### Clean build files
 	@go clean
 
 .PHONY: build
-build: clean ### Build binary
+build: generate clean ### Build binary
 	@go build -tags netgo -a -v -ldflags "${LD_FLAGS}" -o ./bin/echoperator ./cmd/*.go
 	@chmod +x ./bin/*
