@@ -1,0 +1,13 @@
+project_name: echoperator
+builds:
+  - main: ./cmd/echoperator
+    binary: echoperator
+    goos:
+      - linux
+    goarch:
+      - arm64
+      - amd64
+    env:
+      - CGO_ENABLED=0
+archives:
+  - name_template: "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
