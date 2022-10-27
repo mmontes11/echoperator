@@ -7,7 +7,7 @@
 [![Artifact HUB](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/echoperator)](https://artifacthub.io/packages/search?repo=echoperator)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
-Simple Kubernetes operator for handling `echo` CRDs.
+Simple Kubernetes operator built from scratch with [client-go](https://github.com/kubernetes/client-go).
 
 [Kubernetes operator pattern](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/) implementation using the [client-go](https://github.com/kubernetes/client-go) library. Altough there are a bunch of frameworks for doing this ([kubebuilder](https://book.kubebuilder.io/), [operator framework](https://operatorframework.io/) ...), this example operator uses the tools provided by [client-go](https://github.com/kubernetes/client-go) for simplicity and flexibility reasons. 
 
