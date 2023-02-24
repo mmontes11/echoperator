@@ -32,9 +32,7 @@ Simple Kubernetes operator built from scratch with [client-go](https://github.co
 ### Installation
 
 ```bash
-helm repo add mmontes https://charts.mmontes.duckdns.org
-```
-```bash
+helm repo add mmontes https://mmontes11.github.io/charts
 helm install echoperator mmontes/echoperator
 ```
 
