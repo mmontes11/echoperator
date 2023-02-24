@@ -4,7 +4,7 @@
 [![Release](https://github.com/mmontes11/echoperator/actions/workflows/release.yml/badge.svg)](https://github.com/mmontes11/echoperator/actions/workflows/release.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/mmontes11/echoperator)](https://goreportcard.com/report/github.com/mmontes11/echoperator)
 [![Go Reference](https://pkg.go.dev/badge/github.com/mmontes11/echoperator.svg)](https://pkg.go.dev/github.com/mmontes11/echoperator)
-[![Artifact HUB](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/echoperator)](https://artifacthub.io/packages/search?repo=echoperator)
+[![Artifact HUB](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/echoperator)](https://artifacthub.io/packages/helm/mmontes/echoperator)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
 Simple Kubernetes operator built from scratch with [client-go](https://github.com/kubernetes/client-go).
